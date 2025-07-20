@@ -4,6 +4,12 @@ An ultra-fast and lightweight web framework for Node.js, inspired by simplicity 
 
 [![npm version](https://badge.fury.io/js/atomik.svg)](https://badge.fury.io/js/atomik) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## Quick start
+
+```bash
+	pnpx atomikjs create <projectName>
+```
+
 ```typescript
 import { Atomik } from 'atomikjs';
 
