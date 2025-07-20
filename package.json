@@ -8,8 +8,7 @@
 		"dev": "ts-node-dev --respawn --transpile-only src/exemples/basic.ts",
 		"build": "tsc",
 		"start": "node dist/examples/basic.js",
-		"build:cli": "tsc && chmod +x dist/package/cli.js",
-		"prepublishOnly": "npm run build:cli"
+		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
 		"web",
