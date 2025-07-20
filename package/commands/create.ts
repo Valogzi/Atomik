@@ -93,12 +93,9 @@ async function copyTemplateFiles(
 
 	for (const [filePath, content] of Object.entries(files)) {
 		const fullPath = path.join(projectPath, filePath);
-		fs.copyFileSync(
-			path.join(__dirname, 'templates', template, filePath),
-			fullPath,
-		);
+		fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+		fs.writeFileSync(fullPath, content);
 	}
-
 	fs.copyFileSync(
 		path.join(__dirname, `templates/${template}/src/index.${ext}`),
 		path.join(projectPath, `src/index.${ext}`),
