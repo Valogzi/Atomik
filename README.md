@@ -13,7 +13,7 @@ app.get('/', c => {
 	return c.text('Hello, Atomik! 🚀');
 });
 
-// Server starts automatically on port 5500
+// Server starts automatically on port 3000
 ```
 
 ## 🌟 Features
