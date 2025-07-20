@@ -1,6 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
+import {
+	detectPackageManager,
+	installDependencies,
+	generateScripts,
+	generateDevDependencies,
+} from '../utils/package-manager';
 
 export interface CreateOptions {
 	template: string;
@@ -46,20 +51,22 @@ export async function createProject(
 		await createPackageJson(projectPath, projectName, options);
 
 		// Install dependencies
-		console.log('📦 Installing dependencies...');
-		process.chdir(projectPath);
-		execSync('npm install', { stdio: 'inherit' });
+		const packageManager = detectPackageManager(projectPath);
+		installDependencies(packageManager, projectPath);
 
 		console.log('✅ Project created successfully!');
+
+		const runCmd = packageManager.runCommand;
+
 		console.log(`
 🚀 Quick start:
    cd ${projectName}
-   npm run dev
+   ${runCmd} dev
 
 📚 Available commands:
-   npm run dev     - Start development server
-   npm run build   - Build for production  
-   npm start       - Start production server
+   ${runCmd} dev     - Start development server
+   ${runCmd} build   - Build for production  
+   ${runCmd} start   - Start production server
 		`);
 	} catch (error) {
 		console.error('❌ Error creating project:', error);
@@ -118,7 +125,6 @@ function getTemplateFiles(
 			return {
 				...commonFiles,
 				[`src/routes/users.${ext}`]: getUsersRouteTemplate(isTS),
-				[`src/middleware/cors.${ext}`]: getCorsMiddlewareTemplate(isTS),
 			};
 		case 'full':
 			return {
@@ -126,7 +132,6 @@ function getTemplateFiles(
 				[`src/routes/api.${ext}`]: getApiRouteTemplate(isTS),
 				[`src/routes/static.${ext}`]: getStaticRouteTemplate(isTS),
 				[`src/middleware/logger.${ext}`]: getLoggerMiddlewareTemplate(isTS),
-				[`src/middleware/cors.${ext}`]: getCorsMiddlewareTemplate(isTS),
 				'public/index.html': getIndexHtmlTemplate(),
 			};
 		default: // basic
@@ -136,8 +141,8 @@ function getTemplateFiles(
 
 function getMainTemplate(template: string, isTS: boolean): string {
 	const importType = isTS
-		? "import { Atomik, cors } from 'atomik';"
-		: "const { Atomik, cors } = require('atomik');";
+		? "import { Atomik, cors } from 'atomikjs';"
+		: "const { Atomik, cors } = require('atomikjs');";
 
 	switch (template) {
 		case 'api':
@@ -224,8 +229,8 @@ console.log('🚀 Server running on http://localhost:3000');
 
 function getUsersRouteTemplate(isTS: boolean): string {
 	const routerImport = isTS
-		? "import { Router } from 'atomik';"
-		: "const { Router } = require('atomik');";
+		? "import { Router } from 'atomikjs';"
+		: "const { Router } = require('atomikjs');";
 	const exportSyntax = isTS
 		? 'export const usersRouter = router;'
 		: 'module.exports = { usersRouter: router };';
@@ -271,28 +276,8 @@ ${exportSyntax}
 `;
 }
 
-function getCorsMiddlewareTemplate(isTS: boolean): string {
-	const exportSyntax = isTS
-		? 'export const corsMiddleware'
-		: 'module.exports = { corsMiddleware';
-
-	return `${
-		isTS
-			? "import { cors } from 'atomik';"
-			: "const { cors } = require('atomik');"
-	}
-
-${exportSyntax} = cors({
-	origin: ['http://localhost:3000', 'http://localhost:5173'],
-	methods: ['GET', 'POST', 'PUT', 'DELETE'],
-	allowedHeaders: ['Content-Type', 'Authorization'],
-	credentials: true
-});${!isTS ? ' };' : ''}
-`;
-}
-
 function getLoggerMiddlewareTemplate(isTS: boolean): string {
-	const contextImport = isTS ? "import { Context } from 'atomik';" : '';
+	const contextImport = isTS ? "import { Context } from 'atomikjs';" : '';
 	const functionType = isTS ? '(c: Context, next: () => void)' : '(c, next)';
 	const exportSyntax = isTS
 		? 'export const logger ='
@@ -317,8 +302,8 @@ ${exportSyntax} ${functionType} => {
 
 function getApiRouteTemplate(isTS: boolean): string {
 	const routerImport = isTS
-		? "import { Router } from 'atomik';"
-		: "const { Router } = require('atomik');";
+		? "import { Router } from 'atomikjs';"
+		: "const { Router } = require('atomikjs');";
 	const exportSyntax = isTS
 		? 'export const apiRouter = router;'
 		: 'module.exports = { apiRouter: router };';
@@ -349,8 +334,8 @@ ${exportSyntax}
 
 function getStaticRouteTemplate(isTS: boolean): string {
 	const routerImport = isTS
-		? "import { Router } from 'atomik';"
-		: "const { Router } = require('atomik');";
+		? "import { Router } from 'atomikjs';"
+		: "const { Router } = require('atomikjs');";
 	const exportSyntax = isTS
 		? 'export const staticRouter = router;'
 		: 'module.exports = { staticRouter: router };';
@@ -487,36 +472,24 @@ async function createPackageJson(
 	options: CreateOptions,
 ) {
 	const isTS = !options.javascript;
+	const packageManager = detectPackageManager(projectPath);
 
 	const packageJson = {
 		name: projectName,
 		version: '1.0.0',
 		description: `A new Atomik project created with ${options.template} template`,
 		main: isTS ? 'dist/index.js' : 'src/index.js',
-		scripts: {
-			...(isTS && {
-				dev: 'ts-node-dev --respawn --transpile-only src/index.ts',
-				build: 'tsc',
-				start: 'node dist/index.js',
-			}),
-			...(!isTS && {
-				dev: 'node --watch src/index.js',
-				start: 'node src/index.js',
-			}),
-		},
+		scripts: generateScripts(packageManager, isTS),
 		keywords: ['atomik', 'web', 'framework'],
 		author: '',
 		license: 'MIT',
 		dependencies: {
-			atomik: '^1.0.0',
+			atomikjs: '^1.0.0',
 		},
-		devDependencies: {
-			...(isTS && {
-				'@types/node': '^20.0.0',
-				'ts-node-dev': '^2.0.0',
-				typescript: '^5.0.0',
-			}),
-		},
+		devDependencies: generateDevDependencies(packageManager, isTS),
+		...(packageManager.name !== 'npm' && {
+			packageManager: `${packageManager.name}@latest`,
+		}),
 	};
 
 	fs.writeFileSync(

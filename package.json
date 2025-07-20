@@ -1,8 +1,9 @@
 {
 	"name": "atomikjs",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "Ultra-fast and lightweight web framework for Node.js",
 	"main": "dist/src/index.js",
+	"types": "index.d.ts",
 	"bin": {
 		"atomik": "dist/package/cli.js"
 	},
@@ -23,7 +24,9 @@
 	],
 	"files": [
 		"dist",
-		"templates"
+		"templates",
+		"index.d.ts",
+		"types.d.ts"
 	],
 	"author": "Valogzi",
 	"license": "MIT",
