@@ -25,6 +25,9 @@ class Router {
             handler,
         });
     }
+    use(middleware) {
+        this.middlewares.push(middleware);
+    }
     get(path, handler) {
         this.addRoute('GET', path, handler);
     }
@@ -74,9 +77,6 @@ class Router {
             }
         };
         runMiddleware();
-    }
-    use(middleware) {
-        this.middlewares.push(middleware);
     }
 }
 exports.Router = Router;

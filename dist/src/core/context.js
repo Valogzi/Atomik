@@ -8,6 +8,7 @@ function createContext(req, res, params = {}) {
     return {
         req,
         res,
+        url,
         method: req.method || 'GET',
         params, // Maintenant c'est un objet avec les paramètres de route
         query: new URLSearchParams(req.url?.split('?')[1] || ''),
@@ -33,6 +34,5 @@ function createContext(req, res, params = {}) {
             });
             res.end();
         },
-        url,
     };
 }
