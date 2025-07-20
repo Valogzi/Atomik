@@ -1,20 +1,33 @@
 {
 	"name": "atomik",
 	"version": "1.0.0",
-	"description": "",
+	"description": "Ultra-fast and lightweight web framework for Node.js",
 	"main": "dist/src/index.js",
+	"bin": {
+		"atomik": "dist/package/cli.js"
+	},
 	"scripts": {
 		"dev": "ts-node-dev --respawn --transpile-only src/exemples/basic.ts",
 		"build": "tsc",
-		"start": "node dist/examples/basic.js"
+		"start": "node dist/examples/basic.js",
+		"build:cli": "tsc && chmod +x dist/package/cli.js",
+		"prepublishOnly": "npm run build:cli"
 	},
-	"keywords": [],
-	"author": "",
+	"keywords": [
+		"web",
+		"framework",
+		"typescript",
+		"nodejs",
+		"fast",
+		"lightweight"
+	],
+	"author": "Valogzi",
 	"license": "MIT",
 	"packageManager": "pnpm@10.12.4",
 	"devDependencies": {
 		"@types/node": "^24.0.15",
 		"@types/ws": "^8.18.1",
+		"commander": "^12.1.0",
 		"cross-env": "^7.0.3",
 		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0",
