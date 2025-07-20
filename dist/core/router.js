@@ -42,7 +42,9 @@ class Router {
     }
     handle(req, res) {
         const method = req.method || 'GET';
-        const url = req.url ? new URL(req.url, `http://${req.headers.host}`).pathname : '/';
+        const url = req.url
+            ? new URL(req.url, `http://${req.headers.host}`).pathname
+            : '/';
         const methodRoutes = this.routes[method] || [];
         for (const route of methodRoutes) {
             const match = url.match(route.regex);
@@ -65,7 +67,7 @@ class Router {
         const runMiddleware = () => {
             if (i < this.middlewares.length) {
                 const mw = this.middlewares[i++];
-                mw(req, res, runMiddleware);
+                mw((0, context_1.createContext)(req, res), runMiddleware);
             }
             else {
                 this.handle(req, res); // nouvelle méthode pour ne pas appeler handle récursivement
