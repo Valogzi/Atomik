@@ -8,23 +8,15 @@ import {
 } from '../utils/package-manager';
 
 export interface CreateOptions {
-	template: string;
 	typescript?: boolean;
 	javascript?: boolean;
 }
-
-const TEMPLATES = {
-	basic: 'Basic Atomik project',
-	api: 'REST API project',
-	full: 'Full-stack project with middleware',
-};
 
 export async function createProject(
 	projectName: string,
 	options: CreateOptions,
 ) {
 	console.log(`🎯 Creating new Atomik project: ${projectName}`);
-	console.log(`📋 Template: ${options.template}`);
 	console.log(
 		`📦 Language: ${options.javascript ? 'JavaScript' : 'TypeScript'}`,
 	);
@@ -45,7 +37,7 @@ export async function createProject(
 		await createProjectStructure(projectPath, options);
 
 		// Copy template files
-		await copyTemplateFiles(projectPath, options.template, options.javascript);
+		await copyTemplateFiles(projectPath, 'basic', options.javascript);
 
 		// Initialize package.json
 		await createPackageJson(projectPath, projectName, options);
@@ -120,23 +112,7 @@ function getTemplateFiles(
 		...(isTS && { 'tsconfig.json': getTsConfigTemplate() }),
 	};
 
-	switch (template) {
-		case 'api':
-			return {
-				...commonFiles,
-				[`src/routes/users.${ext}`]: getUsersRouteTemplate(isTS),
-			};
-		case 'full':
-			return {
-				...commonFiles,
-				[`src/routes/api.${ext}`]: getApiRouteTemplate(isTS),
-				[`src/routes/static.${ext}`]: getStaticRouteTemplate(isTS),
-				[`src/middleware/logger.${ext}`]: getLoggerMiddlewareTemplate(isTS),
-				'public/index.html': getIndexHtmlTemplate(),
-			};
-		default: // basic
-			return commonFiles;
-	}
+	return commonFiles;
 }
 
 function getMainTemplate(template: string, isTS: boolean): string {
@@ -144,69 +120,7 @@ function getMainTemplate(template: string, isTS: boolean): string {
 		? "import { Atomik, cors } from 'atomikjs';"
 		: "const { Atomik, cors } = require('atomikjs');";
 
-	switch (template) {
-		case 'api':
-			return `${importType}
-${
-	isTS
-		? "import { usersRouter } from './routes/users';"
-		: "const { usersRouter } = require('./routes/users');"
-}
-
-const app = new Atomik({ port: 3000 });
-
-// Middleware
-app.use(cors());
-
-// Routes
-app.use('/api/users', usersRouter);
-
-app.get('/', (c) => {
-	return c.json({ 
-		message: 'Welcome to Atomik API!',
-		version: '1.0.0',
-		endpoints: ['/api/users']
-	});
-});
-
-console.log('🚀 API Server running on http://localhost:3000');
-`;
-
-		case 'full':
-			return `${importType}
-${
-	isTS
-		? `
-import { apiRouter } from './routes/api';
-import { staticRouter } from './routes/static';
-import { logger } from './middleware/logger';
-`
-		: `
-const { apiRouter } = require('./routes/api');
-const { staticRouter } = require('./routes/static'); 
-const { logger } = require('./middleware/logger');
-`
-}
-
-const app = new Atomik({ port: 3000 });
-
-// Global middleware
-app.use(logger);
-app.use(cors());
-
-// Routes
-app.use('/api', apiRouter);
-app.use('/', staticRouter);
-
-app.get('/health', (c) => {
-	return c.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-console.log('🚀 Full-stack server running on http://localhost:3000');
-`;
-
-		default: // basic
-			return `${importType}
+	return `${importType}
 
 const app = new Atomik({ port: 3000 });
 
@@ -223,172 +137,6 @@ app.get('/html', (c) => {
 });
 
 console.log('🚀 Server running on http://localhost:3000');
-`;
-	}
-}
-
-function getUsersRouteTemplate(isTS: boolean): string {
-	const routerImport = isTS
-		? "import { Router } from 'atomikjs';"
-		: "const { Router } = require('atomikjs');";
-	const exportSyntax = isTS
-		? 'export const usersRouter = router;'
-		: 'module.exports = { usersRouter: router };';
-
-	return `${routerImport}
-
-const router = new Router();
-
-// Sample users data
-const users = [
-	{ id: 1, name: 'John Doe', email: 'john@example.com' },
-	{ id: 2, name: 'Jane Smith', email: 'jane@example.com' }
-];
-
-router.get('/', (c) => {
-	return c.json(users);
-});
-
-router.get('/:id', (c) => {
-	const id = parseInt(c.params.id);
-	const user = users.find(u => u.id === id);
-	
-	if (!user) {
-		return c.status(404).json({ error: 'User not found' });
-	}
-	
-	return c.json(user);
-});
-
-router.post('/', (c) => {
-	// In a real app, you'd parse the request body
-	const newUser = { 
-		id: users.length + 1, 
-		name: 'New User', 
-		email: 'new@example.com' 
-	};
-	users.push(newUser);
-	
-	return c.status(201).json(newUser);
-});
-
-${exportSyntax}
-`;
-}
-
-function getLoggerMiddlewareTemplate(isTS: boolean): string {
-	const contextImport = isTS ? "import { Context } from 'atomikjs';" : '';
-	const functionType = isTS ? '(c: Context, next: () => void)' : '(c, next)';
-	const exportSyntax = isTS
-		? 'export const logger ='
-		: 'module.exports = { logger:';
-
-	return `${contextImport}
-
-${exportSyntax} ${functionType} => {
-	const start = Date.now();
-	const method = c.req.method;
-	const url = c.req.url;
-	
-	console.log(\`📥 \${method} \${url}\`);
-	
-	next();
-	
-	const duration = Date.now() - start;
-	console.log(\`📤 \${method} \${url} - \${duration}ms\`);
-};${!isTS ? ' };' : ''}
-`;
-}
-
-function getApiRouteTemplate(isTS: boolean): string {
-	const routerImport = isTS
-		? "import { Router } from 'atomikjs';"
-		: "const { Router } = require('atomikjs');";
-	const exportSyntax = isTS
-		? 'export const apiRouter = router;'
-		: 'module.exports = { apiRouter: router };';
-
-	return `${routerImport}
-
-const router = new Router();
-
-router.get('/status', (c) => {
-	return c.json({ 
-		status: 'active',
-		timestamp: new Date().toISOString(),
-		uptime: process.uptime()
-	});
-});
-
-router.get('/info', (c) => {
-	return c.json({
-		name: 'Atomik API',
-		version: '1.0.0',
-		framework: 'Atomik'
-	});
-});
-
-${exportSyntax}
-`;
-}
-
-function getStaticRouteTemplate(isTS: boolean): string {
-	const routerImport = isTS
-		? "import { Router } from 'atomikjs';"
-		: "const { Router } = require('atomikjs');";
-	const exportSyntax = isTS
-		? 'export const staticRouter = router;'
-		: 'module.exports = { staticRouter: router };';
-
-	return `${routerImport}
-
-const router = new Router();
-
-router.get('/', (c) => {
-	return c.html(\`
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Atomik App</title>
-	<style>
-		body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
-		.header { text-align: center; color: #2563eb; }
-		.card { background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; }
-	</style>
-</head>
-<body>
-	<h1 class="header">⚛️ Welcome to Atomik</h1>
-	<div class="card">
-		<h2>Ultra-fast Web Framework</h2>
-		<p>Your full-stack Atomik application is running!</p>
-		<ul>
-			<li><a href="/api/status">API Status</a></li>
-			<li><a href="/api/info">API Info</a></li>
-			<li><a href="/health">Health Check</a></li>
-		</ul>
-	</div>
-</body>
-</html>
-	\`);
-});
-
-${exportSyntax}
-`;
-}
-
-function getIndexHtmlTemplate(): string {
-	return `<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Atomik App</title>
-</head>
-<body>
-	<h1>⚛️ Atomik Static Files</h1>
-	<p>This is served from the public directory.</p>
-</body>
-</html>
 `;
 }
 
@@ -477,7 +225,7 @@ async function createPackageJson(
 	const packageJson = {
 		name: projectName,
 		version: '1.0.0',
-		description: `A new Atomik project created with ${options.template} template`,
+		description: `A new Atomik project created with basic template`,
 		main: isTS ? 'dist/index.js' : 'src/index.js',
 		scripts: generateScripts(packageManager, isTS),
 		keywords: ['atomik', 'web', 'framework'],

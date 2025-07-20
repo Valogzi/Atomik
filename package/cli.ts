@@ -20,11 +20,6 @@ program
 	.command('create')
 	.description('Create a new Atomik project')
 	.argument('<project-name>', 'Name of the project')
-	.option(
-		'-t, --template <template>',
-		'Template to use (basic, api, full)',
-		'basic',
-	)
 	.option('--typescript', 'Use TypeScript (default)', true)
 	.option('--javascript', 'Use JavaScript instead of TypeScript')
 	.action(createProject);
