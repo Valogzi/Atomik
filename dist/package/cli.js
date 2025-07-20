@@ -36,8 +36,6 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const commander_1 = require("commander");
 const create_1 = require("./commands/create");
-const serve_1 = require("./commands/serve");
-const build_1 = require("./commands/build");
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs"));
 // Read package.json from the correct location
@@ -54,23 +52,4 @@ commander_1.program
     .option('--typescript', 'Use TypeScript (default)', true)
     .option('--javascript', 'Use JavaScript instead of TypeScript')
     .action(create_1.createProject);
-commander_1.program
-    .command('dev')
-    .description('Start development server')
-    .option('-p, --port <port>', 'Port to run on', '3000')
-    .option('-w, --watch', 'Watch for file changes', true)
-    .action(serve_1.serveProject);
-commander_1.program
-    .command('build')
-    .description('Build the project for production')
-    .option('-o, --output <dir>', 'Output directory', 'dist')
-    .action(build_1.buildProject);
-commander_1.program
-    .command('start')
-    .description('Start production server')
-    .option('-p, --port <port>', 'Port to run on', '3000')
-    .action(options => {
-    console.log('🚀 Starting production server...');
-    // Implementation for production start
-});
 commander_1.program.parse();
