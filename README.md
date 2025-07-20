@@ -1,6 +1,6 @@
 # ⚛️ Atomik
 
-Un mini-framework web ultra-rapide et léger pour Node.js, inspiré par la simplicité et la performance.
+An ultra-fast and lightweight web framework for Node.js, inspired by simplicity and performance.
 
 [![npm version](https://badge.fury.io/js/atomik.svg)](https://badge.fury.io/js/atomik) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -13,18 +13,18 @@ app.get('/', c => {
 	return c.text('Hello, Atomik! 🚀');
 });
 
-// Le serveur démarre automatiquement sur le port 5500
+// Server starts automatically on port 5500
 ```
 
-## 🌟 Fonctionnalités
+## 🌟 Features
 
-- ⚡ **Ultra-rapide** - Construit avec des performances en tête
-- 🪶 **Léger** - Minimal et sans dépendances lourdes
-- 🔧 **Simple** - API intuitive et facile à utiliser
-- 🛣️ **Routing** - Système de routage intégré
-- 🔌 **Middleware** - Support complet des middlewares
-- 📦 **TypeScript** - Support TypeScript natif
-- 🎯 **Context API** - Contexte riche pour les requêtes/réponses
+- ⚡ **Ultra-fast** - Built with performance in mind
+- 🪶 **Lightweight** - Minimal with no heavy dependencies
+- 🔧 **Simple** - Intuitive and easy-to-use API
+- 🛣️ **Routing** - Built-in routing system
+- 🔌 **Middleware** - Full middleware support
+- 📦 **TypeScript** - Native TypeScript support
+- 🎯 **Context API** - Rich context for requests/responses
 
 ## 🚀 Installation
 
@@ -39,9 +39,9 @@ pnpm add atomik
 yarn add atomik
 ```
 
-## 📖 Guide de démarrage rapide
+## 📖 Quick Start Guide
 
-### Application basique
+### Basic Application
 
 ```typescript
 import { Atomik } from 'atomik';
@@ -49,11 +49,11 @@ import { Atomik } from 'atomik';
 const app = new Atomik();
 
 app.get('/', c => {
-	return c.text('Bienvenue sur Atomik!');
+	return c.text('Welcome to Atomik!');
 });
 
 app.post('/api/users', c => {
-	return c.json({ message: 'Utilisateur créé' });
+	return c.json({ message: 'User created' });
 });
 
 app.get('/html', c => {
@@ -61,7 +61,7 @@ app.get('/html', c => {
 });
 ```
 
-### Méthodes HTTP supportées
+### Supported HTTP Methods
 
 ```typescript
 app.get('/users', c => c.json({ users: [] }));
@@ -78,40 +78,40 @@ import { Atomik } from 'atomik';
 
 const app = new Atomik();
 
-// Middleware de logging
+// Logging middleware
 app.use((c, next) => {
 	console.log(`${c.method} ${c.url}`);
 	next();
 });
 
-// Middleware CORS
+// CORS middleware
 app.use(cors());
 
-app.get('/', c => c.text('Hello avec middleware!'));
+app.get('/', c => c.text('Hello with middleware!'));
 ```
 
 ### Context API
 
-Le contexte (`c`) fournit des méthodes utiles pour traiter les requêtes et réponses :
+The context (`c`) provides useful methods for handling requests and responses:
 
 ```typescript
 app.get('/api/demo', c => {
-	// Réponse texte
+	// Text response
 	return c.text('Hello World');
 
-	// Réponse JSON
+	// JSON response
 	return c.json({ message: 'Hello', status: 'success' });
 
-	// Réponse HTML
+	// HTML response
 	return c.html('<h1>Hello HTML</h1>');
 
-	// Définir le status
+	// Set status
 	return c.status(201).json({ created: true });
 
-	// Redirection
-	return c.redirect('/autre-page');
+	// Redirect
+	return c.redirect('/other-page');
 
-	// Accès aux paramètres de requête
+	// Access query parameters
 	const name = c.query.get('name');
 	return c.text(`Hello ${name}`);
 });
@@ -119,15 +119,15 @@ app.get('/api/demo', c => {
 
 ## 🏗️ Architecture
 
-Atomik est construit autour de trois concepts principaux :
+Atomik is built around three main concepts:
 
-- **Router** : Gestion des routes et des méthodes HTTP
-- **Context** : Interface riche pour les requêtes/réponses
-- **Server** : Serveur HTTP optimisé
+- **Router**: Route and HTTP method management
+- **Context**: Rich interface for requests/responses
+- **Server**: Optimized HTTP server
 
-## 🔧 Configuration avancée
+## 🔧 Advanced Configuration
 
-### Serveur personnalisé
+### Custom Server
 
 ```typescript
 import { Atomik } from 'atomik';
@@ -144,53 +144,57 @@ app.get('/', c => c.text('Custom server'));
 
 ## 📊 Performance
 
-Atomik est conçu pour être l'un des frameworks les plus rapides :
+Atomik is designed to be one of the fastest frameworks:
 
-- Routage optimisé
-- Faible overhead
-- Parsing efficace des URLs
-- Gestion mémoire optimisée
+- Optimized routing
+- Low overhead
+- Efficient URL parsing
+- Optimized memory management
 
-## 🤝 Comparaison avec d'autres frameworks
+## 🤝 Comparison with Other Frameworks
 
-| Fonctionnalité   | Atomik | Express | Fastify | Hono   |
-| ---------------- | ------ | ------- | ------- | ------ |
-| TypeScript natif | ✅     | ❌      | ✅      | ✅     |
-| Taille (gzipped) | ~2KB   | ~15KB   | ~8KB    | ~3KB   |
-| Performance      | ⚡⚡⚡ | ⚡      | ⚡⚡    | ⚡⚡⚡ |
-| API moderne      | ✅     | ❌      | ✅      | ✅     |
+| Feature           | Atomik | Express | Fastify | Hono   |
+| ----------------- | ------ | ------- | ------- | ------ |
+| Native TypeScript | ✅     | ❌      | ✅      | ✅     |
+| Size (gzipped)    | ~2KB   | ~15KB   | ~8KB    | ~3KB   |
+| Performance       | ⚡⚡⚡ | ⚡      | ⚡⚡    | ⚡⚡⚡ |
+| Modern API        | ✅     | ❌      | ✅      | ✅     |
 
-## 🛠️ Développement
+## 🛠️ Development
 
 ```bash
-# Cloner le repo
-git clone https://github.com/votre-username/atomik.git
+# Clone the repo
+git clone https://github.com/valogzi/atomik.git
 cd atomik
 
-# Installer les dépendances
+# Install dependencies
 pnpm install
 
-# Développement
+# Development
 pnpm dev
 
 # Build
 pnpm build
 ```
 
-## 📝 Exemples
+## 📝 Examples
 
-Consultez le dossier [`exemples/`](./src/exemples/) pour des exemples complets.
+Check the [`examples/`](./src/exemples/) folder for complete examples.
 
-## 📄 Licence
+## 🤝 Contributing
+
+Contributions are welcome! Check our [contribution guide](CONTRIBUTING.md).
+
+## 📄 License
 
 MIT © [Valogzi](https://github.com/valogzi)
 
-## 🙏 Remerciements
+## 🙏 Acknowledgments
 
-Inspiré par l'excellente architecture de [Hono](https://hono.dev/) et optimisé pour Node.js.
+Inspired by the excellent architecture of [Hono](https://hono.dev/) and optimized for Node.js.
 
 ---
 
 <div align="center">
-  <strong>Atomik</strong> - Le framework web qui ne ralentit pas votre développement ⚛️
+  <strong>Atomik</strong> - The web framework that doesn't slow down your development ⚛️
 </div>
