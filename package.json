@@ -1,5 +1,5 @@
 {
-	"name": "atomik",
+	"name": "@valogzi/atomik",
 	"version": "1.0.0",
 	"description": "Ultra-fast and lightweight web framework for Node.js",
 	"main": "dist/src/index.js",
