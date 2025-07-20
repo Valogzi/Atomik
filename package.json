@@ -1,6 +1,6 @@
 {
 	"name": "atomikjs",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"description": "Ultra-fast and lightweight web framework for Node.js",
 	"main": "dist/src/index.js",
 	"types": "index.d.ts",
@@ -24,6 +24,7 @@
 	],
 	"files": [
 		"dist",
+		"src",
 		"templates",
 		"index.d.ts",
 		"types.d.ts"
@@ -34,7 +35,7 @@
 	"devDependencies": {
 		"@types/node": "^24.0.15",
 		"@types/ws": "^8.18.1",
-		"atomikjs": "^1.0.0",
+		"atomikjs": "^1.0.5",
 		"cross-env": "^7.0.3",
 		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0",
