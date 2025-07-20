@@ -14,11 +14,20 @@ export class Atomik extends Router {
 	server: http.Server;
 	customListen: boolean = false;
 
-	constructor() {
+	constructor(data?: { port?: number; callback?: () => void }) {
 		super();
+		const port = data?.port;
+		const callback = data?.callback;
 		this.server = createServer(this);
-		this.server.listen(5500, () => {
-			console.log('Server is running on http://localhost:5500');
-		});
+		this.server.listen(
+			port ? port : 3000,
+			callback
+				? callback
+				: () => {
+						console.log(
+							`Server is running on http://localhost:${port ? port : 3000}`,
+						);
+				  },
+		);
 	}
 }

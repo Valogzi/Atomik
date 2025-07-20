@@ -134,17 +134,16 @@ Atomik est construit autour de trois concepts principaux :
 ### Serveur personnalisé
 
 ```typescript
-import { Router } from 'atomik';
-import { createServer } from 'atomik/server';
+import { Atomik } from 'atomik';
 
-const router = new Router();
-
-router.get('/', c => c.text('Custom server'));
-
-const server = createServer(router);
-server.listen(3000, () => {
-	console.log('Serveur démarré sur le port 3000');
+const app = new Atomik({
+	port: 3000,
+	callback: () => {
+		console.log('📦 Custom start message');
+	},
 });
+
+app.get('/', c => c.text('Custom server'));
 ```
 
 ## 📊 Performance
