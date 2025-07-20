@@ -5,7 +5,7 @@ An ultra-fast and lightweight web framework for Node.js, inspired by simplicity 
 [![npm version](https://badge.fury.io/js/atomik.svg)](https://badge.fury.io/js/atomik) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ```typescript
-import { Atomik } from 'atomik';
+import { Atomik } from 'atomikjs';
 
 const app = new Atomik();
 
@@ -30,13 +30,13 @@ app.get('/', c => {
 
 ```bash
 # npm
-npm install atomik
+npm install atomikjs
 
 # pnpm
-pnpm add atomik
+pnpm add atomikjs
 
 # yarn
-yarn add atomik
+yarn add atomikjs
 ```
 
 ## 📖 Quick Start Guide
@@ -44,7 +44,7 @@ yarn add atomik
 ### Basic Application
 
 ```typescript
-import { Atomik } from 'atomik';
+import { Atomik } from 'atomikjs';
 
 const app = new Atomik();
 
@@ -74,7 +74,7 @@ app.delete('/users/:id', c => c.json({ deleted: true }));
 ### Middleware
 
 ```typescript
-import { Atomik } from 'atomik';
+import { Atomik } from 'atomikjs';
 
 const app = new Atomik();
 
@@ -130,7 +130,7 @@ Atomik is built around three main concepts:
 ### Custom Server
 
 ```typescript
-import { Atomik } from 'atomik';
+import { Atomik } from 'atomikjs';
 
 const app = new Atomik({
 	port: 3000,
