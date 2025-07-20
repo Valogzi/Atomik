@@ -10,6 +10,9 @@ import {
 declare class Atomik implements Router {
 	constructor(options?: AtomikOptions);
 
+	// Middleware
+	use(middleware: MiddlewareFunction): void;
+
 	// HTTP Methods
 	get(path: string, handler: RouteHandler): void;
 	post(path: string, handler: RouteHandler): void;
@@ -18,9 +21,6 @@ declare class Atomik implements Router {
 	patch(path: string, handler: RouteHandler): void;
 	options(path: string, handler: RouteHandler): void;
 	head(path: string, handler: RouteHandler): void;
-
-	// Middleware
-	use(middleware: MiddlewareFunction): void;
 }
 
 declare function cors(options?: CorsOptions): MiddlewareFunction;

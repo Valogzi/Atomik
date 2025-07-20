@@ -41,6 +41,10 @@ export class Router {
 		});
 	}
 
+	use(middleware: Middleware) {
+		this.middlewares.push(middleware);
+	}
+
 	get(path: string, handler: RouterHandler) {
 		this.addRoute('GET', path, handler);
 	}
@@ -97,9 +101,5 @@ export class Router {
 		};
 
 		runMiddleware();
-	}
-
-	use(middleware: Middleware) {
-		this.middlewares.push(middleware);
 	}
 }

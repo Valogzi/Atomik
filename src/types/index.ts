@@ -1,11 +1,17 @@
+import { IncomingMessage, ServerResponse } from 'http';
+
 export interface Context {
-	req: Request;
-	res: Response;
+	req: IncomingMessage;
+	res: ServerResponse;
+	url: string | null;
+	method: string;
 	params: Record<string, string>;
-	json(data: any): Response;
-	text(text: string): Response;
-	html(html: string): Response;
+	query: URLSearchParams;
+	text(text: string): ServerResponse<IncomingMessage>;
+	json(data: any): ServerResponse<IncomingMessage>;
+	html(html: string): ServerResponse<IncomingMessage>;
 	status(code: number): Context;
+	redirect(url: string): void;
 }
 
 export interface MiddlewareFunction {
