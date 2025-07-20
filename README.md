@@ -7,7 +7,7 @@ An ultra-fast and lightweight web framework for Node.js, inspired by simplicity 
 ## Quick start
 
 ```bash
-	pnpx atomikjs create <projectName>
+	pnpm create atomikjs <projectName>
 ```
 
 ```typescript
