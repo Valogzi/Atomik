@@ -1,0 +1,24 @@
+{
+	"name": "atomik",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/src/index.js",
+	"scripts": {
+		"dev": "tsx ./src/exemples/basic.ts",
+		"build": "tsc",
+		"start": "node dist/examples/basic.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"packageManager": "pnpm@10.12.4",
+	"devDependencies": {
+		"@types/node": "^24.0.15",
+		"@types/ws": "^8.18.1",
+		"tsx": "^4.20.3",
+		"typescript": "^5.8.3"
+	},
+	"dependencies": {
+		"ws": "^8.18.3"
+	}
+}
