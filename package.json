@@ -21,6 +21,11 @@
 		"fast",
 		"lightweight"
 	],
+	"files": [
+		"dist",
+		"templates",
+		"package"
+	],
 	"author": "Valogzi",
 	"license": "MIT",
 	"packageManager": "pnpm@10.12.4",
