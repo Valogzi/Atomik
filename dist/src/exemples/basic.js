@@ -2,7 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../index");
 const cors_1 = require("../plugins/cors");
-const app = new index_1.Atomik();
+const app = new index_1.Atomik({
+    port: 3000,
+    callback: () => {
+        console.log('🚀 Server running on http://localhost:3000');
+    },
+});
 app.use((c, next) => {
     if (c.url?.startsWith('/post')) {
         console.warn('unauthorized access to /post route');
