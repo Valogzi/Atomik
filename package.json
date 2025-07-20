@@ -1,6 +1,6 @@
 {
 	"name": "atomikjs",
-	"version": "1.0.15",
+	"version": "1.0.16",
 	"description": "Ultra-fast and lightweight web framework for Node.js",
 	"main": "dist/src/index.js",
 	"types": "index.d.ts",
