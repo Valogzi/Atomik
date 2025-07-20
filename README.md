@@ -186,10 +186,6 @@ pnpm build
 
 Consultez le dossier [`exemples/`](./src/exemples/) pour des exemples complets.
 
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! Consultez notre [guide de contribution](CONTRIBUTING.md).
-
 ## 📄 Licence
 
 MIT © [Valogzi](https://github.com/valogzi)
