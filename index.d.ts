@@ -21,10 +21,6 @@ declare class Atomik implements Router {
 
 	// Middleware
 	use(middleware: MiddlewareFunction): void;
-	use(path: string, router: Router): void;
-
-	// Server
-	listen(port?: number, callback?: () => void): void;
 }
 
 declare function cors(options?: CorsOptions): MiddlewareFunction;
