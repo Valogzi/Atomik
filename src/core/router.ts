@@ -3,11 +3,7 @@ import { Context, createContext } from './context';
 
 type RouterHandler = (c: Context) => void;
 
-export type Middleware = (
-	req: IncomingMessage,
-	res: ServerResponse,
-	next: () => void,
-) => void;
+export type Middleware = (c: Context, next: () => void) => void;
 
 interface Route {
 	pattern: string;
@@ -94,7 +90,7 @@ export class Router {
 		const runMiddleware = () => {
 			if (i < this.middlewares.length) {
 				const mw = this.middlewares[i++];
-				mw(req, res, runMiddleware);
+				mw(createContext(req, res), runMiddleware);
 			} else {
 				this.handle(req, res); // nouvelle méthode pour ne pas appeler handle récursivement
 			}

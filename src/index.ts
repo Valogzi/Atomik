@@ -10,6 +10,13 @@ export type Middleware = (
 	next: () => void,
 ) => void;
 
+// Export des plugins
+export * from './plugins';
+
+// Export des types core
+export { Context } from './core/context';
+export { Router } from './core/router';
+
 export class Atomik extends Router {
 	server: http.Server;
 	customListen: boolean = false;

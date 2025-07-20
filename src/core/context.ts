@@ -12,6 +12,7 @@ export function createContext(
 	return {
 		req,
 		res,
+		method: req.method || 'GET',
 		params, // Maintenant c'est un objet avec les paramètres de route
 		query: new URLSearchParams(req.url?.split('?')[1] || ''),
 		text: (body: string) => {

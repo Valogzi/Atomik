@@ -79,17 +79,13 @@ import { Atomik } from 'atomik';
 const app = new Atomik();
 
 // Middleware de logging
-app.use((req, res, next) => {
-	console.log(`${req.method} ${req.url}`);
+app.use((c, next) => {
+	console.log(`${c.method} ${c.url}`);
 	next();
 });
 
 // Middleware CORS
-app.use((req, res, next) => {
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-	next();
-});
+app.use(cors());
 
 app.get('/', c => c.text('Hello avec middleware!'));
 ```
