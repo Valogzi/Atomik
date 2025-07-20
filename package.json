@@ -1,6 +1,6 @@
 {
 	"name": "atomikjs",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Ultra-fast and lightweight web framework for Node.js",
 	"main": "dist/src/index.js",
 	"bin": {
@@ -23,8 +23,7 @@
 	],
 	"files": [
 		"dist",
-		"templates",
-		"package"
+		"templates"
 	],
 	"author": "Valogzi",
 	"license": "MIT",
