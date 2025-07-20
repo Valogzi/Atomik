@@ -4,9 +4,6 @@
 	"description": "Ultra-fast and lightweight web framework for Node.js",
 	"main": "dist/src/index.js",
 	"types": "index.d.ts",
-	"bin": {
-		"atomik": "dist/package/cli.js"
-	},
 	"scripts": {
 		"dev": "ts-node-dev --respawn --transpile-only src/exemples/basic.ts",
 		"build": "tsc",
