@@ -1,4 +1,4 @@
-import { Atomik } from 'atomik';
+import { Atomik } from 'atomikjs';
 
 const app = new Atomik({ port: 3000 });
 

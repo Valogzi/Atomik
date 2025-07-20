@@ -27,6 +27,7 @@
 	"devDependencies": {
 		"@types/node": "^24.0.15",
 		"@types/ws": "^8.18.1",
+		"atomikjs": "^1.0.0",
 		"commander": "^12.1.0",
 		"cross-env": "^7.0.3",
 		"ts-node": "^10.9.2",
