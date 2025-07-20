@@ -192,7 +192,7 @@ Les contributions sont les bienvenues ! Consultez notre [guide de contribution](
 
 ## 📄 Licence
 
-MIT © [Votre nom](https://github.com/votre-username)
+MIT © [Valogzi](https://github.com/valogzi)
 
 ## 🙏 Remerciements
 
