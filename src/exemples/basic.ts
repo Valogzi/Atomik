@@ -1,11 +1,6 @@
 import { Atomik } from '../index';
 const app = new Atomik();
 
-app.get('/', (req, res) => {
-	res.send({
-		message: 'Welcome to Atomik!',
-		method: req.method,
-		url: req.url,
-		headers: req.headers,
-	});
+app.get('/', c => {
+	c.status(200).text('Hello, World! dqddq');
 });

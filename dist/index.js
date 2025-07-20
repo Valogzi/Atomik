@@ -6,9 +6,10 @@ const server_1 = require("./core/server");
 class Atomik extends router_1.Router {
     constructor() {
         super();
+        this.customListen = false;
         this.server = (0, server_1.createServer)(this);
-        this.server.listen(3000, () => {
-            console.log('Server is running on http://localhost:3000');
+        this.server.listen(5500, () => {
+            console.log('Server is running on http://localhost:5500');
         });
     }
 }

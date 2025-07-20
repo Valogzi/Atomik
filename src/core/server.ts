@@ -3,6 +3,6 @@ import { Router } from './router';
 
 export function createServer(router: Router) {
 	return http.createServer((req, res) => {
-		router.handle(req, res);
+		router.handleMiddleware(req, res);
 	});
 }
