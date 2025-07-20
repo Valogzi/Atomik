@@ -9,14 +9,11 @@ export interface Context {
 }
 
 export interface MiddlewareFunction {
-	(c: Context, next?: () => Promise<void> | void):
-		| Promise<Response | void>
-		| Response
-		| void;
+	(c: Context, next?: void): void;
 }
 
 export interface RouteHandler {
-	(c: Context): Promise<Response | void> | Response | void;
+	(c: Context): void;
 }
 
 export interface AtomikOptions {
@@ -41,5 +38,4 @@ export interface Router {
 	options(path: string, handler: RouteHandler): void;
 	head(path: string, handler: RouteHandler): void;
 	use(middleware: MiddlewareFunction): void;
-	use(path: string, router: Router): void;
 }
