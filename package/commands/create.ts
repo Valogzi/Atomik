@@ -129,15 +129,35 @@ const app = new Atomik({
 });
 
 app.get('/', c => {
-	return c.text('Hello, Atomik! 🚀');
+	return c.text('Hello, Atomik! 🚀 Bienvenue à Atomik! 你好 🌍');
 });
 
 app.get('/json', c => {
-	return c.json({ message: 'Hello from Atomik API!' });
+	return c.json({ 
+		message: 'Hello from Atomik API!', 
+		français: 'Bonjour depuis Atomik!',
+		chinese: '你好来自 Atomik!',
+		emoji: '🚀🌟💫'
+	});
 });
 
 app.get('/html', c => {
-	return c.html('<h1>Welcome to Atomik</h1><p>Ultra-fast web framework</p>');
+	return c.html(\`
+		<!DOCTYPE html>
+		<html lang="fr">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Atomik - Framework Ultra-rapide</title>
+		</head>
+		<body>
+			<h1>Bienvenue sur Atomik 🚀</h1>
+			<p>Framework web ultra-rapide et léger</p>
+			<p>支持 UTF-8 编码 ✨</p>
+			<p>Émojis: 🌟💫⚡🔥</p>
+		</body>
+		</html>
+	\`);
 });`;
 }
 
