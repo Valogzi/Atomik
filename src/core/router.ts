@@ -9,36 +9,83 @@ export type Middleware = (
 	next: () => void,
 ) => void;
 
+interface Route {
+	pattern: string;
+	regex: RegExp;
+	paramNames: string[];
+	handler: RouterHandler;
+}
+
 export class Router {
-	routes: Record<string, RouterHandler> = {};
+	routes: Record<string, Route[]> = {};
 	middlewares: Middleware[] = [];
 
+	private addRoute(method: string, path: string, handler: RouterHandler) {
+		if (!this.routes[method]) {
+			this.routes[method] = [];
+		}
+
+		// Convertir /post/:id en regex et extraire les noms de paramètres
+		const paramNames: string[] = [];
+		const regexPattern = path.replace(
+			/:([a-zA-Z_$][a-zA-Z0-9_$]*)/g,
+			(_, paramName) => {
+				paramNames.push(paramName);
+				return '([^/]+)';
+			},
+		);
+
+		const regex = new RegExp(`^${regexPattern}$`);
+
+		this.routes[method].push({
+			pattern: path,
+			regex,
+			paramNames,
+			handler,
+		});
+	}
+
 	get(path: string, handler: RouterHandler) {
-		this.routes[`GET ${path}`] = handler;
+		this.addRoute('GET', path, handler);
 	}
 	post(path: string, handler: RouterHandler) {
-		this.routes[`POST ${path}`] = handler;
+		this.addRoute('POST', path, handler);
 	}
 	put(path: string, handler: RouterHandler) {
-		this.routes[`PUT ${path}`] = handler;
+		this.addRoute('PUT', path, handler);
 	}
 	patch(path: string, handler: RouterHandler) {
-		this.routes[`PATCH ${path}`] = handler;
+		this.addRoute('PATCH', path, handler);
 	}
 	delete(path: string, handler: RouterHandler) {
-		this.routes[`DELETE ${path}`] = handler;
+		this.addRoute('DELETE', path, handler);
 	}
 
 	handle(req: IncomingMessage, res: ServerResponse) {
-		const key = `${req.method} ${req.url}`;
-		const handler = this.routes[key];
+		const method = req.method || 'GET';
+		const url = req.url
+			? new URL(req.url, `http://${req.headers.host}`).pathname
+			: '/';
 
-		if (handler) {
-			handler(createContext(req, res)); // Appel de la fonction de gestion
-		} else {
-			res.writeHead(404, { 'Content-Type': 'text/plain' });
-			res.end('Not Found');
+		const methodRoutes = this.routes[method] || [];
+
+		for (const route of methodRoutes) {
+			const match = url.match(route.regex);
+			if (match) {
+				// Extraire les paramètres
+				const params: Record<string, string> = {};
+				route.paramNames.forEach((name, index) => {
+					params[name] = match[index + 1];
+				});
+
+				const context = createContext(req, res, params);
+				return route.handler(context);
+			}
 		}
+
+		// Aucune route trouvée
+		res.writeHead(404, { 'Content-Type': 'text/plain' });
+		res.end('Not Found');
 	}
 
 	handleMiddleware(req: IncomingMessage, res: ServerResponse) {

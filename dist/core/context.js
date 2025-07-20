@@ -1,15 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createContext = createContext;
-function createContext(req, res) {
+function createContext(req, res, params = {}) {
     const url = req.url
         ? new URL(req.url, `http://${req.headers.host}`).pathname
         : null;
-    const paramsParser = url?.split(':');
     return {
         req,
         res,
-        params: paramsParser,
+        params, // Maintenant c'est un objet avec les paramètres de route
         query: new URLSearchParams(req.url?.split('?')[1] || ''),
         text: (body) => {
             res.setHeader('Content-Type', 'text/plain');
@@ -25,7 +24,7 @@ function createContext(req, res) {
         },
         status: (code) => {
             res.statusCode = code;
-            return createContext(req, res);
+            return createContext(req, res, params);
         },
         redirect: (url) => {
             res.writeHead(302, {

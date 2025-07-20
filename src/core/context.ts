@@ -1,15 +1,18 @@
 import { IncomingMessage, ServerResponse } from 'http';
 
-export function createContext(req: IncomingMessage, res: ServerResponse) {
+export function createContext(
+	req: IncomingMessage,
+	res: ServerResponse,
+	params: Record<string, string> = {},
+) {
 	const url = req.url
 		? new URL(req.url, `http://${req.headers.host}`).pathname
 		: null;
-	const paramsParser = url?.split(':');
 
 	return {
 		req,
 		res,
-		params: paramsParser,
+		params, // Maintenant c'est un objet avec les paramètres de route
 		query: new URLSearchParams(req.url?.split('?')[1] || ''),
 		text: (body: string) => {
 			res.setHeader('Content-Type', 'text/plain');
@@ -27,7 +30,7 @@ export function createContext(req: IncomingMessage, res: ServerResponse) {
 		},
 		status: (code: number) => {
 			res.statusCode = code;
-			return createContext(req, res);
+			return createContext(req, res, params);
 		},
 		redirect: (url: string) => {
 			res.writeHead(302, {

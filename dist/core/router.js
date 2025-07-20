@@ -7,31 +7,58 @@ class Router {
         this.routes = {};
         this.middlewares = [];
     }
+    addRoute(method, path, handler) {
+        if (!this.routes[method]) {
+            this.routes[method] = [];
+        }
+        // Convertir /post/:id en regex et extraire les noms de paramètres
+        const paramNames = [];
+        const regexPattern = path.replace(/:([a-zA-Z_$][a-zA-Z0-9_$]*)/g, (_, paramName) => {
+            paramNames.push(paramName);
+            return '([^/]+)';
+        });
+        const regex = new RegExp(`^${regexPattern}$`);
+        this.routes[method].push({
+            pattern: path,
+            regex,
+            paramNames,
+            handler,
+        });
+    }
     get(path, handler) {
-        this.routes[`GET ${path}`] = handler;
+        this.addRoute('GET', path, handler);
     }
     post(path, handler) {
-        this.routes[`POST ${path}`] = handler;
+        this.addRoute('POST', path, handler);
     }
     put(path, handler) {
-        this.routes[`PUT ${path}`] = handler;
+        this.addRoute('PUT', path, handler);
     }
     patch(path, handler) {
-        this.routes[`PATCH ${path}`] = handler;
+        this.addRoute('PATCH', path, handler);
     }
     delete(path, handler) {
-        this.routes[`DELETE ${path}`] = handler;
+        this.addRoute('DELETE', path, handler);
     }
     handle(req, res) {
-        const key = `${req.method} ${req.url}`;
-        const handler = this.routes[key];
-        if (handler) {
-            handler((0, context_1.createContext)(req, res)); // Appel de la fonction de gestion
+        const method = req.method || 'GET';
+        const url = req.url ? new URL(req.url, `http://${req.headers.host}`).pathname : '/';
+        const methodRoutes = this.routes[method] || [];
+        for (const route of methodRoutes) {
+            const match = url.match(route.regex);
+            if (match) {
+                // Extraire les paramètres
+                const params = {};
+                route.paramNames.forEach((name, index) => {
+                    params[name] = match[index + 1];
+                });
+                const context = (0, context_1.createContext)(req, res, params);
+                return route.handler(context);
+            }
         }
-        else {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('Not Found');
-        }
+        // Aucune route trouvée
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found');
     }
     handleMiddleware(req, res) {
         let i = 0;
