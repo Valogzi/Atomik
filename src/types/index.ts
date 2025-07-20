@@ -21,7 +21,7 @@ export interface RouteHandler {
 
 export interface AtomikOptions {
 	port?: number;
-	host?: string;
+	callback?: () => void;
 }
 
 export interface CorsOptions {

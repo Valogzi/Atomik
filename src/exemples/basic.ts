@@ -1,6 +1,11 @@
 import { Atomik } from '../index';
 import { cors } from '../plugins/cors';
-const app = new Atomik();
+const app = new Atomik({
+	port: 3000,
+	callback: () => {
+		console.log('🚀 Server running on http://localhost:3000');
+	},
+});
 
 app.use((c, next) => {
 	if (c.url?.startsWith('/post')) {
