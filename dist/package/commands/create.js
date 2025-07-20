@@ -88,47 +88,22 @@ async function createProjectStructure(projectPath, options) {
 }
 async function copyTemplateFiles(projectPath, template, useJS) {
     const ext = useJS ? 'js' : 'ts';
-    const templateDir = path.resolve(__dirname, '../../templates', template);
     // Template files based on template type
     const files = getTemplateFiles(template, ext);
     for (const [filePath, content] of Object.entries(files)) {
         const fullPath = path.join(projectPath, filePath);
-        fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-        fs.writeFileSync(fullPath, content);
+        fs.copyFileSync(path.join(__dirname, 'templates', template, filePath), fullPath);
     }
+    fs.copyFileSync(path.join(__dirname, `templates/${template}/src/index.${ext}`), path.join(projectPath, `src/index.${ext}`));
 }
 function getTemplateFiles(template, ext) {
     const isTS = ext === 'ts';
     const commonFiles = {
-        [`src/index.${ext}`]: getMainTemplate(template, isTS),
         'README.md': getReadmeTemplate(),
         '.gitignore': getGitignoreTemplate(),
         ...(isTS && { 'tsconfig.json': getTsConfigTemplate() }),
     };
     return commonFiles;
-}
-function getMainTemplate(template, isTS) {
-    const importType = isTS
-        ? "import { Atomik, cors } from 'atomikjs';"
-        : "const { Atomik, cors } = require('atomikjs');";
-    return `${importType}
-
-const app = new Atomik({ port: 3000 });
-
-app.get('/', (c) => {
-	return c.text('Hello, Atomik! 🚀');
-});
-
-app.get('/json', (c) => {
-	return c.json({ message: 'Hello from Atomik API!' });
-});
-
-app.get('/html', (c) => {
-	return c.html('<h1>Welcome to Atomik</h1><p>Ultra-fast web framework</p>');
-});
-
-console.log('🚀 Server running on http://localhost:3000');
-`;
 }
 function getReadmeTemplate() {
     return `# Atomik Project
