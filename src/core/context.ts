@@ -1,45 +1,16 @@
 import { IncomingMessage, ServerResponse } from 'http';
+import { nodejsContext } from './context/node';
+import { EdgeContext } from './context/edge';
 
 export function createContext(
-	req: IncomingMessage,
-	res: ServerResponse,
+	req: IncomingMessage | Request,
+	res: ServerResponse | Response,
 	params: Record<string, string> = {},
 ) {
-	const url = req.url
-		? new URL(req.url, `http://${req.headers.host}`).pathname
-		: null;
-
-	return {
-		req,
-		res,
-		url,
-		method: req.method || 'GET',
-		params, // Maintenant c'est un objet avec les paramètres de route
-		query: new URLSearchParams(req.url?.split('?')[1] || ''),
-		text: (body: string) => {
-			res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-			return res.end(body);
-		},
-		json: (body: object) => {
-			res.setHeader('Content-Type', 'application/json; charset=utf-8');
-			return res.end(JSON.stringify(body));
-		},
-		html: (htmlElement: string) => {
-			res.setHeader('Content-Type', 'text/html; charset=utf-8');
-			return res.end(
-				htmlElement || '<!DOCTYPE html><html><body></body></html>',
-			);
-		},
-		status: (code: number) => {
-			res.statusCode = code;
-			return createContext(req, res, params);
-		},
-		redirect: (url: string) => {
-			res.writeHead(302, {
-				Location: url,
-			});
-			res.end();
-		},
-	};
+	if (req instanceof IncomingMessage && res instanceof ServerResponse) {
+		return nodejsContext(req, res, params);
+	} else {
+		return EdgeContext(req as Request, res as Response, params);
+	}
 }
 export type Context = ReturnType<typeof createContext>;

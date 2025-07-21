@@ -1,4 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
+import { Atomik } from '..';
 
 export interface Context {
 	req: IncomingMessage;
@@ -7,24 +8,37 @@ export interface Context {
 	method: string;
 	params: Record<string, string>;
 	query: URLSearchParams;
-	text(text: string): ServerResponse<IncomingMessage>;
-	json(data: any): ServerResponse<IncomingMessage>;
-	html(html: string): ServerResponse<IncomingMessage>;
+	text(text: string): void;
+	json(data: any): void;
+	html(html: string): void;
+	set(header: string, value: string): Context;
+	send(body: string | object): void;
 	status(code: number): Context;
 	redirect(url: string): void;
 }
 
+export interface edgeContext {
+	req: Request;
+	res: Response;
+	url: string;
+	method: string;
+	params: Record<string, string>;
+	query: URLSearchParams;
+	text: (body: string) => Response;
+	json: (body: object) => Response;
+	html: (htmlElement: string) => Response;
+	set(header: string, value: string, body?: string | object): edgeContext;
+	send(body: string | object): Response;
+	status: (code: number, body?: string | object) => edgeContext;
+	redirect: (url: string) => Response;
+}
+
 export interface MiddlewareFunction {
-	(c: Context, next?: void): void;
+	(c: Context, next: () => void): Promise<Response | undefined>;
 }
 
 export interface RouteHandler {
-	(c: Context): void;
-}
-
-export interface AtomikOptions {
-	port?: number;
-	callback?: () => void;
+	(c: Context): void | Promise<void> | Response | Promise<void | Response>;
 }
 
 export interface CorsOptions {
@@ -35,7 +49,13 @@ export interface CorsOptions {
 	maxAge?: number;
 }
 
+export interface serveOptions {
+	app: Atomik;
+	port?: number;
+}
+
 export interface Router {
+	use(middleware: MiddlewareFunction): void;
 	get(path: string, handler: RouteHandler): void;
 	post(path: string, handler: RouteHandler): void;
 	put(path: string, handler: RouteHandler): void;
@@ -43,5 +63,6 @@ export interface Router {
 	patch(path: string, handler: RouteHandler): void;
 	options(path: string, handler: RouteHandler): void;
 	head(path: string, handler: RouteHandler): void;
-	use(middleware: MiddlewareFunction): void;
+	all(path: string, handler: RouteHandler): void;
+	route(path: string, handler: Atomik): void;
 }

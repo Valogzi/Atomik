@@ -1,4 +1,6 @@
+import { IncomingMessage, ServerResponse } from 'http';
 import { Context } from '../core/context';
+import { edgeContext, Context as CTX } from '../types/index';
 
 export interface CorsOptions {
 	/**
@@ -68,63 +70,120 @@ const DEFAULT_OPTIONS: Required<CorsOptions> = {
 export function cors(options: CorsOptions = {}) {
 	const config = { ...DEFAULT_OPTIONS, ...options };
 
-	return (c: Context, next: () => void) => {
-		const origin = getOrigin(c.req.headers.origin || '', config.origin);
+	return async (c: Context, next: () => void) => {
+		if (c.req instanceof IncomingMessage && c.res instanceof ServerResponse) {
+			const origin = getOrigin(c.req.headers.origin || '', config.origin);
 
-		// 1. GESTION DE L'ORIGIN
-		if (origin) {
-			c.res.setHeader('Access-Control-Allow-Origin', origin);
-		}
+			// 1. GESTION DE L'ORIGIN
+			if (origin) {
+				c.res.setHeader('Access-Control-Allow-Origin', origin);
+			}
 
-		// 2. GESTION DES CREDENTIALS
-		if (config.credentials) {
-			c.res.setHeader('Access-Control-Allow-Credentials', 'true');
-		}
+			// 2. GESTION DES CREDENTIALS
+			if (config.credentials) {
+				c.res.setHeader('Access-Control-Allow-Credentials', 'true');
+			}
 
-		// 3. GESTION DES HEADERS EXPOSÉS
-		if (config.exposedHeaders.length > 0) {
-			c.res.setHeader(
-				'Access-Control-Expose-Headers',
-				config.exposedHeaders.join(', '),
-			);
-		}
-
-		// 4. GESTION DES REQUÊTES PREFLIGHT (OPTIONS)
-		if (c.req.method === 'OPTIONS') {
-			// Headers autorisés
-			if (config.allowedHeaders === '*') {
-				const requestHeaders = c.req.headers['access-control-request-headers'];
-				if (requestHeaders) {
-					c.res.setHeader('Access-Control-Allow-Headers', requestHeaders);
-				}
-			} else if (Array.isArray(config.allowedHeaders)) {
+			// 3. GESTION DES HEADERS EXPOSÉS
+			if (config.exposedHeaders.length > 0) {
 				c.res.setHeader(
-					'Access-Control-Allow-Headers',
-					config.allowedHeaders.join(', '),
+					'Access-Control-Expose-Headers',
+					config.exposedHeaders.join(', '),
 				);
-			} else {
-				c.res.setHeader('Access-Control-Allow-Headers', config.allowedHeaders);
 			}
 
-			// Méthodes autorisées
-			c.res.setHeader(
-				'Access-Control-Allow-Methods',
-				config.methods.join(', '),
-			);
+			// 4. GESTION DES REQUÊTES PREFLIGHT (OPTIONS)
+			if (c.req.method === 'OPTIONS') {
+				// Headers autorisés
+				if (config.allowedHeaders === '*') {
+					const requestHeaders =
+						c.req.headers['access-control-request-headers'];
+					if (requestHeaders) {
+						c.res.setHeader('Access-Control-Allow-Headers', requestHeaders);
+					}
+				} else if (Array.isArray(config.allowedHeaders)) {
+					c.res.setHeader(
+						'Access-Control-Allow-Headers',
+						config.allowedHeaders.join(', '),
+					);
+				} else {
+					c.res.setHeader(
+						'Access-Control-Allow-Headers',
+						config.allowedHeaders,
+					);
+				}
 
-			// Cache duration
-			c.res.setHeader('Access-Control-Max-Age', config.maxAge.toString());
+				// Méthodes autorisées
+				c.res.setHeader(
+					'Access-Control-Allow-Methods',
+					config.methods.join(', '),
+				);
 
-			// Répondre immédiatement à la requête preflight
-			if (!config.preflightContinue) {
-				c.res.statusCode = config.optionsSuccessStatus;
-				c.res.end();
-				return;
+				// Cache duration
+				c.res.setHeader('Access-Control-Max-Age', config.maxAge.toString());
+
+				// Répondre immédiatement à la requête preflight
+				if (!config.preflightContinue) {
+					c.res.statusCode = config.optionsSuccessStatus;
+					c.res.end();
+					return;
+				}
 			}
+
+			// 5. CONTINUER VERS LE PROCHAIN MIDDLEWARE/HANDLER
+			next();
 		}
 
-		// 5. CONTINUER VERS LE PROCHAIN MIDDLEWARE/HANDLER
-		next();
+		if (c.req instanceof Request) {
+			const origin = getOrigin(
+				c.req.headers.get('origin') || '',
+				config.origin,
+			);
+
+			const headers = new Headers();
+
+			if (origin) headers.set('Access-Control-Allow-Origin', origin);
+			if (config.credentials)
+				headers.set('Access-Control-Allow-Credentials', 'true');
+			if (config.exposedHeaders.length > 0)
+				headers.set(
+					'Access-Control-Expose-Headers',
+					config.exposedHeaders.join(', '),
+				);
+
+			if (c.req.method === 'OPTIONS') {
+				// Allow Headers
+				if (config.allowedHeaders === '*') {
+					const reqHeaders = c.req.headers.get(
+						'access-control-request-headers',
+					);
+					if (reqHeaders)
+						headers.set('Access-Control-Allow-Headers', reqHeaders);
+				} else if (Array.isArray(config.allowedHeaders)) {
+					headers.set(
+						'Access-Control-Allow-Headers',
+						config.allowedHeaders.join(', '),
+					);
+				} else {
+					headers.set('Access-Control-Allow-Headers', config.allowedHeaders);
+				}
+
+				// Allow Methods
+				headers.set('Access-Control-Allow-Methods', config.methods.join(', '));
+				headers.set('Access-Control-Max-Age', config.maxAge.toString());
+
+				if (!config.preflightContinue) {
+					return new Response(null, {
+						status: config.optionsSuccessStatus,
+						headers,
+					});
+				}
+			}
+
+			// On injecte les headers pour continuer
+			c.res = new Response(null, { headers }); // ou merge les headers plus proprement si nécessaire
+			next();
+		}
 	};
 }
 

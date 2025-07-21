@@ -1,29 +1,14 @@
-import { Atomik } from '../index';
-import { cors } from '../plugins/cors';
-const app = new Atomik({
-	port: 3000,
-	callback: () => {
-		console.log('🚀 Server running on http://localhost:3000');
-	},
-});
+import { Atomik, serve, cors } from '../index';
+const api = new Atomik();
 
-app.use((c, next) => {
-	if (c.url?.startsWith('/post')) {
-		console.warn('unauthorized access to /post route');
-		c.redirect('/'); // Redirection vers la page d'accueil
-		return;
-	}
-	next();
-});
+api.use(cors());
 
-app.use(cors());
-
-app.get('/', c => {
+api.get('/', async c => {
 	c.status(200).text('Hello, World! dqddq');
 });
 
 // Route avec paramètres
-app.get('/post/:id', c => {
+api.get('/post/:id', async c => {
 	const id = c.params.id;
 	return c.json({
 		message: `Récupération du post avec l'ID: ${id}`,
@@ -31,8 +16,12 @@ app.get('/post/:id', c => {
 	});
 });
 
+api.get('/test', c => {
+	c.status(200).set('X-Custom', 'value').json({ foo: 'bar' });
+});
+
 // Route avec plusieurs paramètres
-app.get('/user/:userId/post/:postId', c => {
+api.get('/user/:userId/post/:postId', c => {
 	const { userId, postId } = c.params;
 	return c.json({
 		message: `Post ${postId} de l'utilisateur ${userId}`,
@@ -42,7 +31,7 @@ app.get('/user/:userId/post/:postId', c => {
 });
 
 // Route avec paramètre et query
-app.get('/search/:category', c => {
+api.get('/search/:category', c => {
 	const category = c.params.category;
 	const query = c.query.get('q');
 	const limit = c.query.get('limit') || '10';
@@ -54,3 +43,30 @@ app.get('/search/:category', c => {
 		results: [],
 	});
 });
+
+const statusApi = new Atomik();
+
+// fonction asynchrone pour simuler une opération longue
+statusApi.get('/', c => {
+	// Simule une opération longue
+	new Promise(resolve => setTimeout(resolve, 1000));
+	return c.json({
+		status: 'OK',
+		timestamp: new Date().toISOString(),
+	});
+});
+
+statusApi.get('/health', c => {
+	return c.json({
+		status: 'Healthy',
+		timestamp: new Date().toISOString(),
+	});
+});
+
+const app = new Atomik();
+app.route('/api', api);
+app.route('/status', statusApi);
+
+serve({ app: app });
+
+export default app;

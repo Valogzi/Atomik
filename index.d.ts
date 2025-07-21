@@ -2,13 +2,15 @@ import {
 	Context,
 	MiddlewareFunction,
 	RouteHandler,
-	AtomikOptions,
 	CorsOptions,
 	Router,
+	serveOptions,
+	edgeContext,
 } from './src/types';
+import { Atomik as AtomikHandler } from './src/index';
 
 declare class Atomik implements Router {
-	constructor(options?: AtomikOptions);
+	constructor();
 
 	// Middleware
 	use(middleware: MiddlewareFunction): void;
@@ -21,21 +23,27 @@ declare class Atomik implements Router {
 	patch(path: string, handler: RouteHandler): void;
 	options(path: string, handler: RouteHandler): void;
 	head(path: string, handler: RouteHandler): void;
+	all(path: string, handler: RouteHandler): void;
+	route(path: string, handler: AtomikHandler): void;
+
+	// cross-runtime fetch
+
+	fetch(req: Request): Promise<Response>;
 }
 
 declare function cors(options?: CorsOptions): MiddlewareFunction;
-
-declare function createRouter(): Router;
+declare function serve(options: serveOptions): void;
 
 export {
 	Atomik,
 	cors,
-	createRouter,
+	serve,
 	Context,
+	edgeContext,
 	MiddlewareFunction,
 	RouteHandler,
-	AtomikOptions,
 	CorsOptions,
+	serveOptions,
 	Router,
 };
 

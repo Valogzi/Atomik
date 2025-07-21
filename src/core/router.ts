@@ -1,9 +1,16 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { Context, createContext } from './context';
+import { Atomik } from '..';
+import { edgeContext } from '../types';
 
-type RouterHandler = (c: Context) => void;
+type RouterHandler = (
+	c: Context | edgeContext,
+) => void | Response | Promise<void | Response>;
 
-export type Middleware = (c: Context, next: () => void) => void;
+export type Middleware = (
+	c: Context,
+	next: () => void,
+) => Promise<Response | undefined>;
 
 interface Route {
 	pattern: string;
@@ -16,29 +23,40 @@ export class Router {
 	routes: Record<string, Route[]> = {};
 	middlewares: Middleware[] = [];
 
-	private addRoute(method: string, path: string, handler: RouterHandler) {
-		if (!this.routes[method]) {
-			this.routes[method] = [];
+	private addRoute(
+		method: string | string[],
+		path: string,
+		handler: RouterHandler,
+	) {
+		const logic = (method: string) => {
+			if (!this.routes[method]) {
+				this.routes[method] = [];
+			}
+			// Convertir /post/:id en regex et extraire les noms de paramètres
+			const paramNames: string[] = [];
+			const regexPattern = path.replace(
+				/:([a-zA-Z_$][a-zA-Z0-9_$]*)/g,
+				(_, paramName) => {
+					paramNames.push(paramName);
+					return '([^/]+)';
+				},
+			);
+
+			const regex = new RegExp(`^${regexPattern}$`);
+
+			this.routes[method].push({
+				pattern: path,
+				regex,
+				paramNames,
+				handler,
+			});
+		};
+
+		if (method instanceof Array) {
+			method.forEach(m => logic(m));
+		} else {
+			logic(method);
 		}
-
-		// Convertir /post/:id en regex et extraire les noms de paramètres
-		const paramNames: string[] = [];
-		const regexPattern = path.replace(
-			/:([a-zA-Z_$][a-zA-Z0-9_$]*)/g,
-			(_, paramName) => {
-				paramNames.push(paramName);
-				return '([^/]+)';
-			},
-		);
-
-		const regex = new RegExp(`^${regexPattern}$`);
-
-		this.routes[method].push({
-			pattern: path,
-			regex,
-			paramNames,
-			handler,
-		});
 	}
 
 	use(middleware: Middleware) {
@@ -60,8 +78,35 @@ export class Router {
 	delete(path: string, handler: RouterHandler) {
 		this.addRoute('DELETE', path, handler);
 	}
+	options(path: string, handler: RouterHandler) {
+		this.addRoute('OPTIONS', path, handler);
+	}
+	head(path: string, handler: RouterHandler) {
+		this.addRoute('HEAD', path, handler);
+	}
+	all(path: string, handler: RouterHandler) {
+		this.addRoute(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], path, handler);
+	}
+	route(path: string, handle: Atomik) {
+		const routes = handle.routes;
+		const checkPathSlash = path === '/' ? '' : path;
 
-	handle(req: IncomingMessage, res: ServerResponse) {
+		this.middlewares = handle.middlewares;
+		handle.middlewares = []; // Nettoyer les middlewares de l'instance Atomik
+
+		Object.keys(routes).forEach(method => {
+			routes[method].forEach(route => {
+				if (route.pattern.endsWith('/')) {
+					route.pattern = route.pattern.slice(0, -1); // Enlever le slash final
+				}
+				const fullRoute = checkPathSlash + route.pattern;
+				this.addRoute(method, fullRoute, route.handler);
+			});
+			delete routes[method]; // Nettoyer les routes après les avoir ajoutées
+		});
+	}
+
+	async handle(req: IncomingMessage, res: ServerResponse, ctx: Context) {
 		const method = req.method || 'GET';
 		const url = req.url
 			? new URL(req.url, `http://${req.headers.host}`).pathname
@@ -78,8 +123,12 @@ export class Router {
 					params[name] = match[index + 1];
 				});
 
-				const context = createContext(req, res, params);
-				return route.handler(context);
+				ctx.params = params; // Mettre à jour le contexte avec les paramètres
+				const res = await Promise.resolve(route.handler(ctx));
+				if (res instanceof Response) {
+					return res;
+				}
+				return;
 			}
 		}
 
@@ -88,18 +137,19 @@ export class Router {
 		res.end('Not Found');
 	}
 
-	handleMiddleware(req: IncomingMessage, res: ServerResponse) {
+	async handleMiddleware(req: IncomingMessage, res: ServerResponse) {
 		let i = 0;
+		const ctx = createContext(req, res);
 
-		const runMiddleware = () => {
+		const runMiddleware = async () => {
 			if (i < this.middlewares.length) {
 				const mw = this.middlewares[i++];
-				mw(createContext(req, res), runMiddleware);
+				return await Promise.resolve(mw(ctx, runMiddleware));
 			} else {
-				this.handle(req, res); // nouvelle méthode pour ne pas appeler handle récursivement
+				return await this.handle(req, res, ctx); // nouvelle méthode pour ne pas appeler handle récursivement
 			}
 		};
 
-		runMiddleware();
+		return await runMiddleware();
 	}
 }
