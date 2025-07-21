@@ -81,7 +81,7 @@ app.put('/users/:id', c => c.json({ updated: true }));
 app.delete('/users/:id', c => c.json({ deleted: true }));
 app.patch('/users/:id', c => c.json({ patched: true }));
 app.options('/users', c => c.set('x-header', 'preload').status(204).json({})); // empty json call signature to validate the request
-app.head('', c => c.set('x-header', 'preload').status(204).json({})); // empty json call signature to validate the request
+app.head('head', c => c.set('x-header', 'preload').status(204).json({})); // empty json call signature to validate the request
 app.all('all', c => c.json({ ok: true }));
 ```
 
