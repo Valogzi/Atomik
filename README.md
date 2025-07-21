@@ -201,7 +201,7 @@ Atomik is built around three main concepts:
 
 ## 🔧 Advanced Configuration
 
-### Custom Server
+### Nodejs runtime
 
 ```typescript
 import { Atomik, serve, cors } from '../index';
