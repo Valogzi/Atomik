@@ -1,35 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../index");
-const cors_1 = require("../plugins/cors");
-const app = new index_1.Atomik({
-    port: 3000,
-    callback: () => {
-        console.log('🚀 Server running on http://localhost:3000');
-    },
-});
-app.use((c, next) => {
-    if (c.url?.startsWith('/post')) {
-        console.warn('unauthorized access to /post route');
-        c.redirect('/'); // Redirection vers la page d'accueil
-        return;
-    }
-    next();
-});
-app.use((0, cors_1.cors)());
-app.get('/', c => {
+const api = new index_1.Atomik();
+api.use((0, index_1.cors)());
+api.get('/', async (c) => {
     c.status(200).text('Hello, World! dqddq');
 });
 // Route avec paramètres
-app.get('/post/:id', c => {
+api.get('/post/:id', async (c) => {
     const id = c.params.id;
     return c.json({
         message: `Récupération du post avec l'ID: ${id}`,
         id: id,
     });
 });
+api.get('/test', c => {
+    c.status(200).set('X-Custom', 'value').json({ foo: 'bar' });
+});
 // Route avec plusieurs paramètres
-app.get('/user/:userId/post/:postId', c => {
+api.get('/user/:userId/post/:postId', c => {
     const { userId, postId } = c.params;
     return c.json({
         message: `Post ${postId} de l'utilisateur ${userId}`,
@@ -38,7 +27,7 @@ app.get('/user/:userId/post/:postId', c => {
     });
 });
 // Route avec paramètre et query
-app.get('/search/:category', c => {
+api.get('/search/:category', c => {
     const category = c.params.category;
     const query = c.query.get('q');
     const limit = c.query.get('limit') || '10';
@@ -49,3 +38,24 @@ app.get('/search/:category', c => {
         results: [],
     });
 });
+const statusApi = new index_1.Atomik();
+// fonction asynchrone pour simuler une opération longue
+statusApi.get('/', c => {
+    // Simule une opération longue
+    new Promise(resolve => setTimeout(resolve, 1000));
+    return c.json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+    });
+});
+statusApi.get('/health', c => {
+    return c.json({
+        status: 'Healthy',
+        timestamp: new Date().toISOString(),
+    });
+});
+const app = new index_1.Atomik();
+app.route('/api', api);
+app.route('/status', statusApi);
+(0, index_1.serve)({ app: app });
+exports.default = app;

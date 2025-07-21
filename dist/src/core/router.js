@@ -8,22 +8,30 @@ class Router {
         this.middlewares = [];
     }
     addRoute(method, path, handler) {
-        if (!this.routes[method]) {
-            this.routes[method] = [];
+        const logic = (method) => {
+            if (!this.routes[method]) {
+                this.routes[method] = [];
+            }
+            // Convertir /post/:id en regex et extraire les noms de paramètres
+            const paramNames = [];
+            const regexPattern = path.replace(/:([a-zA-Z_$][a-zA-Z0-9_$]*)/g, (_, paramName) => {
+                paramNames.push(paramName);
+                return '([^/]+)';
+            });
+            const regex = new RegExp(`^${regexPattern}$`);
+            this.routes[method].push({
+                pattern: path,
+                regex,
+                paramNames,
+                handler,
+            });
+        };
+        if (method instanceof Array) {
+            method.forEach(m => logic(m));
         }
-        // Convertir /post/:id en regex et extraire les noms de paramètres
-        const paramNames = [];
-        const regexPattern = path.replace(/:([a-zA-Z_$][a-zA-Z0-9_$]*)/g, (_, paramName) => {
-            paramNames.push(paramName);
-            return '([^/]+)';
-        });
-        const regex = new RegExp(`^${regexPattern}$`);
-        this.routes[method].push({
-            pattern: path,
-            regex,
-            paramNames,
-            handler,
-        });
+        else {
+            logic(method);
+        }
     }
     use(middleware) {
         this.middlewares.push(middleware);
@@ -43,7 +51,32 @@ class Router {
     delete(path, handler) {
         this.addRoute('DELETE', path, handler);
     }
-    handle(req, res) {
+    options(path, handler) {
+        this.addRoute('OPTIONS', path, handler);
+    }
+    head(path, handler) {
+        this.addRoute('HEAD', path, handler);
+    }
+    all(path, handler) {
+        this.addRoute(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], path, handler);
+    }
+    route(path, handle) {
+        const routes = handle.routes;
+        const checkPathSlash = path === '/' ? '' : path;
+        this.middlewares = handle.middlewares;
+        handle.middlewares = []; // Nettoyer les middlewares de l'instance Atomik
+        Object.keys(routes).forEach(method => {
+            routes[method].forEach(route => {
+                if (route.pattern.endsWith('/')) {
+                    route.pattern = route.pattern.slice(0, -1); // Enlever le slash final
+                }
+                const fullRoute = checkPathSlash + route.pattern;
+                this.addRoute(method, fullRoute, route.handler);
+            });
+            delete routes[method]; // Nettoyer les routes après les avoir ajoutées
+        });
+    }
+    async handle(req, res, ctx) {
         const method = req.method || 'GET';
         const url = req.url
             ? new URL(req.url, `http://${req.headers.host}`).pathname
@@ -57,26 +90,31 @@ class Router {
                 route.paramNames.forEach((name, index) => {
                     params[name] = match[index + 1];
                 });
-                const context = (0, context_1.createContext)(req, res, params);
-                return route.handler(context);
+                ctx.params = params; // Mettre à jour le contexte avec les paramètres
+                const res = await Promise.resolve(route.handler(ctx));
+                if (res instanceof Response) {
+                    return res;
+                }
+                return;
             }
         }
         // Aucune route trouvée
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         res.end('Not Found');
     }
-    handleMiddleware(req, res) {
+    async handleMiddleware(req, res) {
         let i = 0;
-        const runMiddleware = () => {
+        const ctx = (0, context_1.createContext)(req, res);
+        const runMiddleware = async () => {
             if (i < this.middlewares.length) {
                 const mw = this.middlewares[i++];
-                mw((0, context_1.createContext)(req, res), runMiddleware);
+                return await Promise.resolve(mw(ctx, runMiddleware));
             }
             else {
-                this.handle(req, res); // nouvelle méthode pour ne pas appeler handle récursivement
+                return await this.handle(req, res, ctx); // nouvelle méthode pour ne pas appeler handle récursivement
             }
         };
-        runMiddleware();
+        return await runMiddleware();
     }
 }
 exports.Router = Router;

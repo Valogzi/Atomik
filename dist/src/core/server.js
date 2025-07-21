@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createServer = createServer;
 const http_1 = __importDefault(require("http"));
 function createServer(router) {
-    return http_1.default.createServer((req, res) => {
-        router.handleMiddleware(req, res);
+    return http_1.default.createServer(async (req, res) => {
+        await router.handleMiddleware(req, res);
     });
 }
