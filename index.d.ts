@@ -14,6 +14,8 @@ declare class Atomik implements Router {
 
 	// Middleware
 	use(middleware: MiddlewareFunction): void;
+	use(path: string, middleware: MiddlewareFunction): void;
+	use(arg1: string | MiddlewareFunction, arg2?: MiddlewareFunction): void;
 
 	// HTTP Methods
 	get(path: string, handler: RouteHandler): void;

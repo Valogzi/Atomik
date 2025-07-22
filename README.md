@@ -81,8 +81,8 @@ app.put('/users/:id', c => c.json({ updated: true }));
 app.delete('/users/:id', c => c.json({ deleted: true }));
 app.patch('/users/:id', c => c.json({ patched: true }));
 app.options('/users', c => c.set('x-header', 'preload').status(204).json({})); // empty json call signature to validate the request
-app.head('head', c => c.set('x-header', 'preload').status(204).json({})); // empty json call signature to validate the request
-app.all('all', c => c.json({ ok: true }));
+app.head('/head', c => c.set('x-header', 'preload').status(204).json({})); // empty json call signature to validate the request
+app.all('/all', c => c.json({ ok: true }));
 ```
 
 ### Middleware
@@ -93,8 +93,26 @@ import { Atomik } from 'atomikjs';
 const app = new Atomik();
 
 // Logging middleware
+
+// NOTE: When you use an explicit path in middleware, it's not just the exact path that's intercepted, it's the exact path and the entire route below it.
+// ----- (e.g.) app.use("/post") --> captured routes: /post/*
+
+// with implicit routing (*)
 app.use((c, next) => {
 	console.log(`${c.method} ${c.url}`);
+	next();
+});
+
+// with explicit routing
+app.use('*', (c, next) => {
+	console.log(c.method, c.url);
+	next();
+});
+
+// on specific route
+app.use('/post/user', (c, next) => {
+	// captured routes: /post/user/*
+	console.log('From /post/user base url');
 	next();
 });
 
@@ -189,6 +207,32 @@ app.get('/api/demo/:id', c => {
 });
 
 export default app;
+```
+
+## ⚠️ Warning
+
+Make sure to always return a response in all your endpoints
+
+### Common errors
+
+```typescript
+// in Edge environement
+app.get('/', c => c.json({ ok: true })); // ✅ implicit handler --> auto retrun
+app.get('/', c => {
+	return c.json({ ok: true }); // ✅ explicit handler --> manual return
+});
+app.get('/', c => {
+	c.json({ ok: true }); // ❌ explicit handler without return --> null body in edge env
+});
+
+// in nodejs environement
+app.get('/', c => c.json({ ok: true })); // ✅
+app.get('/', c => {
+	return c.json({ ok: true }); // ✅
+});
+app.get('/', c => {
+	c.json({ ok: true }); // ✅
+});
 ```
 
 ## 🏗️ Architecture

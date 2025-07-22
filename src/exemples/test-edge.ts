@@ -2,7 +2,7 @@ import app from './basic'; // export default app
 import { Request } from 'undici';
 
 async function test() {
-	const req = new Request('http://localhost/api/test', {
+	const req = new Request('http://localhost/api', {
 		method: 'GET',
 		headers: {
 			'User-Agent': 'EdgeClient',

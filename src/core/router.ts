@@ -1,32 +1,23 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { Context, createContext } from './context';
 import { Atomik } from '..';
-import { edgeContext } from '../types';
-
-type RouterHandler = (
-	c: Context | edgeContext,
-) => void | Response | Promise<void | Response>;
-
-export type Middleware = (
-	c: Context,
-	next: () => void,
-) => Promise<Response | undefined>;
+import { MiddlewareEntry, MiddlewareFunction, RouteHandler } from '../types';
 
 interface Route {
 	pattern: string;
 	regex: RegExp;
 	paramNames: string[];
-	handler: RouterHandler;
+	handler: RouteHandler;
 }
 
 export class Router {
 	routes: Record<string, Route[]> = {};
-	middlewares: Middleware[] = [];
+	middlewares: MiddlewareEntry[] = [];
 
 	private addRoute(
 		method: string | string[],
 		path: string,
-		handler: RouterHandler,
+		handler: RouteHandler,
 	) {
 		const logic = (method: string) => {
 			if (!this.routes[method]) {
@@ -59,39 +50,55 @@ export class Router {
 		}
 	}
 
-	use(middleware: Middleware) {
-		this.middlewares.push(middleware);
+	use(middleware: MiddlewareFunction): void;
+	use(path: string, middleware: MiddlewareFunction): void;
+	use(arg1: string | MiddlewareFunction, arg2?: MiddlewareFunction): void {
+		if (typeof arg1 === 'string' && typeof arg2 === 'function') {
+			this.middlewares.push({ path: arg1, handler: arg2 });
+		} else if (typeof arg1 === 'function') {
+			this.middlewares.push({ path: null, handler: arg1 });
+		} else {
+			throw new Error('Invalid arguments for use()');
+		}
 	}
 
-	get(path: string, handler: RouterHandler) {
+	get(path: string, handler: RouteHandler) {
 		this.addRoute('GET', path, handler);
 	}
-	post(path: string, handler: RouterHandler) {
+	post(path: string, handler: RouteHandler) {
 		this.addRoute('POST', path, handler);
 	}
-	put(path: string, handler: RouterHandler) {
+	put(path: string, handler: RouteHandler) {
 		this.addRoute('PUT', path, handler);
 	}
-	patch(path: string, handler: RouterHandler) {
+	patch(path: string, handler: RouteHandler) {
 		this.addRoute('PATCH', path, handler);
 	}
-	delete(path: string, handler: RouterHandler) {
+	delete(path: string, handler: RouteHandler) {
 		this.addRoute('DELETE', path, handler);
 	}
-	options(path: string, handler: RouterHandler) {
+	options(path: string, handler: RouteHandler) {
 		this.addRoute('OPTIONS', path, handler);
 	}
-	head(path: string, handler: RouterHandler) {
+	head(path: string, handler: RouteHandler) {
 		this.addRoute('HEAD', path, handler);
 	}
-	all(path: string, handler: RouterHandler) {
+	all(path: string, handler: RouteHandler) {
 		this.addRoute(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], path, handler);
 	}
 	route(path: string, handle: Atomik) {
 		const routes = handle.routes;
 		const checkPathSlash = path === '/' ? '' : path;
 
-		this.middlewares = handle.middlewares;
+		handle.middlewares.forEach(mw => {
+			if (mw.path !== null) {
+				mw.path = checkPathSlash + mw.path; // Préfixer le chemin du middleware
+			} else {
+				mw.path = checkPathSlash; // Middleware sans chemin spécifique
+			}
+			this.middlewares.push(mw);
+		});
+		// this.middlewares = [...this.middlewares, ...handle.middlewares];
 		handle.middlewares = []; // Nettoyer les middlewares de l'instance Atomik
 
 		Object.keys(routes).forEach(method => {
@@ -140,11 +147,25 @@ export class Router {
 	async handleMiddleware(req: IncomingMessage, res: ServerResponse) {
 		let i = 0;
 		const ctx = createContext(req, res);
+		const url = ctx.url;
 
 		const runMiddleware = async () => {
 			if (i < this.middlewares.length) {
 				const mw = this.middlewares[i++];
-				return await Promise.resolve(mw(ctx, runMiddleware));
+				if (mw.path !== null) {
+					if (url && url.startsWith(mw.path)) {
+						return await Promise.resolve(mw.handler(ctx, runMiddleware));
+					}
+					if (
+						url &&
+						url.startsWith(mw.path.replace('*', '').replace(/\/$/, ''))
+					) {
+						return await Promise.resolve(mw.handler(ctx, runMiddleware));
+					}
+
+					return await runMiddleware(); // Passer au middleware suivant
+				}
+				return await Promise.resolve(mw.handler(ctx, runMiddleware));
 			} else {
 				return await this.handle(req, res, ctx); // nouvelle méthode pour ne pas appeler handle récursivement
 			}

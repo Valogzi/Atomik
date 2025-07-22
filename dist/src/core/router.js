@@ -33,8 +33,16 @@ class Router {
             logic(method);
         }
     }
-    use(middleware) {
-        this.middlewares.push(middleware);
+    use(arg1, arg2) {
+        if (typeof arg1 === 'string' && typeof arg2 === 'function') {
+            this.middlewares.push({ path: arg1, handler: arg2 });
+        }
+        else if (typeof arg1 === 'function') {
+            this.middlewares.push({ path: null, handler: arg1 });
+        }
+        else {
+            throw new Error('Invalid arguments for use()');
+        }
     }
     get(path, handler) {
         this.addRoute('GET', path, handler);
@@ -63,7 +71,16 @@ class Router {
     route(path, handle) {
         const routes = handle.routes;
         const checkPathSlash = path === '/' ? '' : path;
-        this.middlewares = handle.middlewares;
+        handle.middlewares.forEach(mw => {
+            if (mw.path !== null) {
+                mw.path = checkPathSlash + mw.path; // Préfixer le chemin du middleware
+            }
+            else {
+                mw.path = checkPathSlash; // Middleware sans chemin spécifique
+            }
+            this.middlewares.push(mw);
+        });
+        // this.middlewares = [...this.middlewares, ...handle.middlewares];
         handle.middlewares = []; // Nettoyer les middlewares de l'instance Atomik
         Object.keys(routes).forEach(method => {
             routes[method].forEach(route => {
@@ -105,10 +122,21 @@ class Router {
     async handleMiddleware(req, res) {
         let i = 0;
         const ctx = (0, context_1.createContext)(req, res);
+        const url = ctx.url;
         const runMiddleware = async () => {
             if (i < this.middlewares.length) {
                 const mw = this.middlewares[i++];
-                return await Promise.resolve(mw(ctx, runMiddleware));
+                if (mw.path !== null) {
+                    if (url && url.startsWith(mw.path)) {
+                        return await Promise.resolve(mw.handler(ctx, runMiddleware));
+                    }
+                    if (url &&
+                        url.startsWith(mw.path.replace('*', '').replace(/\/$/, ''))) {
+                        return await Promise.resolve(mw.handler(ctx, runMiddleware));
+                    }
+                    return await runMiddleware(); // Passer au middleware suivant
+                }
+                return await Promise.resolve(mw.handler(ctx, runMiddleware));
             }
             else {
                 return await this.handle(req, res, ctx); // nouvelle méthode pour ne pas appeler handle récursivement

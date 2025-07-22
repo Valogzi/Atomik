@@ -3,8 +3,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../index");
 const api = new index_1.Atomik();
 api.use((0, index_1.cors)());
+api.use('*', (c, next) => {
+    console.log(`[API ROUTER] ${c.method} ${c.url}`);
+    next();
+});
 api.get('/', async (c) => {
-    c.status(200).text('Hello, World! dqddq');
+    return c.status(200).text('Hello, World! dqddq');
+});
+api.get('/qdqq', c => {
+    return c.json({
+        message: 'Hello, World! from /qdqq',
+    });
 });
 // Route avec paramètres
 api.get('/post/:id', async (c) => {
@@ -15,9 +24,8 @@ api.get('/post/:id', async (c) => {
     });
 });
 api.get('/test', c => {
-    c.status(200).set('X-Custom', 'value').json({ foo: 'bar' });
+    return c.status(200).set('X-Custom', 'value').json({ foo: 'bar' });
 });
-// Route avec plusieurs paramètres
 api.get('/user/:userId/post/:postId', c => {
     const { userId, postId } = c.params;
     return c.json({
@@ -26,7 +34,6 @@ api.get('/user/:userId/post/:postId', c => {
         postId,
     });
 });
-// Route avec paramètre et query
 api.get('/search/:category', c => {
     const category = c.params.category;
     const query = c.query.get('q');
@@ -39,9 +46,7 @@ api.get('/search/:category', c => {
     });
 });
 const statusApi = new index_1.Atomik();
-// fonction asynchrone pour simuler une opération longue
 statusApi.get('/', c => {
-    // Simule une opération longue
     new Promise(resolve => setTimeout(resolve, 1000));
     return c.json({
         status: 'OK',

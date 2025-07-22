@@ -2,9 +2,19 @@ import { Atomik, serve, cors } from '../index';
 const api = new Atomik();
 
 api.use(cors());
+api.use('*', (c, next) => {
+	console.log(`[API ROUTER] ${c.method} ${c.url}`);
+	next();
+});
 
 api.get('/', async c => {
-	c.status(200).text('Hello, World! dqddq');
+	return c.status(200).text('Hello, World! dqddq');
+});
+
+api.get('/qdqq', c => {
+	return c.json({
+		message: 'Hello, World! from /qdqq',
+	});
 });
 
 // Route avec paramètres
@@ -17,10 +27,9 @@ api.get('/post/:id', async c => {
 });
 
 api.get('/test', c => {
-	c.status(200).set('X-Custom', 'value').json({ foo: 'bar' });
+	return c.status(200).set('X-Custom', 'value').json({ foo: 'bar' });
 });
 
-// Route avec plusieurs paramètres
 api.get('/user/:userId/post/:postId', c => {
 	const { userId, postId } = c.params;
 	return c.json({
@@ -30,7 +39,6 @@ api.get('/user/:userId/post/:postId', c => {
 	});
 });
 
-// Route avec paramètre et query
 api.get('/search/:category', c => {
 	const category = c.params.category;
 	const query = c.query.get('q');
@@ -46,9 +54,7 @@ api.get('/search/:category', c => {
 
 const statusApi = new Atomik();
 
-// fonction asynchrone pour simuler une opération longue
 statusApi.get('/', c => {
-	// Simule une opération longue
 	new Promise(resolve => setTimeout(resolve, 1000));
 	return c.json({
 		status: 'OK',
@@ -64,6 +70,7 @@ statusApi.get('/health', c => {
 });
 
 const app = new Atomik();
+
 app.route('/api', api);
 app.route('/status', statusApi);
 

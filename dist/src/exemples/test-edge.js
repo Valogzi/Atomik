@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const basic_1 = __importDefault(require("./basic")); // export default app
 const undici_1 = require("undici");
 async function test() {
-    const req = new undici_1.Request('http://localhost/api/test', {
+    const req = new undici_1.Request('http://localhost/api', {
         method: 'GET',
         headers: {
             'User-Agent': 'EdgeClient',

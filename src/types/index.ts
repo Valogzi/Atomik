@@ -34,11 +34,20 @@ export interface edgeContext {
 }
 
 export interface MiddlewareFunction {
-	(c: Context, next: () => void): Promise<Response | undefined>;
+	(c: Context | edgeContext, next: () => void):
+		| Promise<Response | undefined>
+		| Response
+		| void
+		| Promise<void>;
+}
+
+export interface MiddlewareEntry {
+	path: string | null;
+	handler: MiddlewareFunction;
 }
 
 export interface RouteHandler {
-	(c: Context): void | Promise<void> | Response | Promise<void | Response>;
+	(c: Context | edgeContext): void | Response | Promise<void | Response>;
 }
 
 export interface CorsOptions {
@@ -56,6 +65,9 @@ export interface serveOptions {
 
 export interface Router {
 	use(middleware: MiddlewareFunction): void;
+	use(path: string, middleware: MiddlewareFunction): void;
+	use(arg1: string | MiddlewareFunction, arg2?: MiddlewareFunction): void;
+
 	get(path: string, handler: RouteHandler): void;
 	post(path: string, handler: RouteHandler): void;
 	put(path: string, handler: RouteHandler): void;
