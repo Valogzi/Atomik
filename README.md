@@ -133,15 +133,11 @@ const api = new Atomik();
 // CORS middleware
 api.use(cors());
 
-api.get('/posts', c =>
-	c.json({
-		posts: ['all posts'],
-	}),
-);
+api.get('/posts', c => c.json({ posts: ['all posts'] }));
 
 api.get('/posts/:id', c => {
 	const id = c.params.id;
-	c.json({
+	return c.json({
 		postId: id,
 	});
 });
@@ -152,7 +148,7 @@ api.post('/posts/:id', c => {
 
 	db.push(id);
 
-	c.json({
+	return c.json({
 		ok: true,
 		newDb: db,
 	});
