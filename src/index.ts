@@ -1,3 +1,4 @@
+import { IncomingMessage, ServerResponse } from 'http';
 import { Router } from './core/router';
 
 // Export des plugins
@@ -12,7 +13,18 @@ export class Atomik extends Router {
 		super();
 	}
 
-	async fetch(req: Request): Promise<Response> {
+	async fetch(
+		req: Request | IncomingMessage,
+		_res?: ServerResponse<IncomingMessage>,
+	): Promise<Response> {
+		if (req instanceof IncomingMessage && _res) {
+			// On utilise le handleMiddleware pour traiter la requête
+			await this.handleMiddleware(req, _res);
+			return new Response(null, {
+				status: 200,
+				headers: { 'Content-Type': 'text/plain' },
+			});
+		}
 		let status = 200;
 		let headers: Record<string, string> = {};
 		let body: string | Uint8Array | null = null;

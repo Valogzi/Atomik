@@ -90,9 +90,4 @@ export interface Router {
 
 	// route sub-router
 	route(path: string, handler: Atomik): void;
-
-	handleMiddleware(
-		req: IncomingMessage,
-		res: ServerResponse,
-	): Promise<void | Response>;
 }

@@ -31,14 +31,11 @@ declare class Atomik implements Router {
 	// route sub-router
 	route(path: string, handler: AtomikHandler): void;
 
-	// handler
-	handleMiddleware(
-		req: IncomingMessage,
-		res: ServerResponse,
-	): Promise<void | Response>;
-
 	// cross-runtime fetch
-	fetch(req: Request): Promise<Response>;
+	fetch(
+		req: Request | IncomingMessage,
+		_res?: ServerResponse<IncomingMessage>,
+	): Promise<Response>;
 }
 
 declare function cors(options?: CorsOptions): MiddlewareFunction;

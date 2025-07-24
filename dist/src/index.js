@@ -15,6 +15,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Atomik = exports.Router = void 0;
+const http_1 = require("http");
 const router_1 = require("./core/router");
 // Export des plugins
 __exportStar(require("./plugins"), exports);
@@ -24,7 +25,15 @@ class Atomik extends router_1.Router {
     constructor() {
         super();
     }
-    async fetch(req) {
+    async fetch(req, _res) {
+        if (req instanceof http_1.IncomingMessage && _res) {
+            // On utilise le handleMiddleware pour traiter la requête
+            await this.handleMiddleware(req, _res);
+            return new Response(null, {
+                status: 200,
+                headers: { 'Content-Type': 'text/plain' },
+            });
+        }
         let status = 200;
         let headers = {};
         let body = null;

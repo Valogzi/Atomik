@@ -7,6 +7,6 @@ exports.createServer = createServer;
 const http_1 = __importDefault(require("http"));
 function createServer(router) {
     return http_1.default.createServer(async (req, res) => {
-        await router.handleMiddleware(req, res);
+        await router.fetch(req, res);
     });
 }
