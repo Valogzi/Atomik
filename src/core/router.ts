@@ -1,14 +1,12 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { Context, createContext } from './context';
 import { Atomik } from '..';
-import { MiddlewareEntry, MiddlewareFunction, RouteHandler } from '../types';
-
-interface Route {
-	pattern: string;
-	regex: RegExp;
-	paramNames: string[];
-	handler: RouteHandler;
-}
+import {
+	MiddlewareEntry,
+	MiddlewareFunction,
+	Route,
+	RouteHandler,
+} from '../types';
 
 export class Router {
 	routes: Record<string, Route[]> = {};

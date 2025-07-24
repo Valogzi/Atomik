@@ -48,6 +48,13 @@ export interface MiddlewareEntry {
 	handler: MiddlewareFunction;
 }
 
+export interface Route {
+	pattern: string;
+	regex: RegExp;
+	paramNames: string[];
+	handler: RouteHandler;
+}
+
 export interface RouteHandler {
 	(c: Context | edgeContext): void | Response | Promise<void | Response>;
 }
@@ -66,7 +73,7 @@ export interface serveOptions {
 }
 
 export interface Router {
-	routes: Map<string, RouteHandler>;
+	routes: Map<string, Route[]>;
 	middlewares: MiddlewareEntry[];
 	handle(
 		req: IncomingMessage,

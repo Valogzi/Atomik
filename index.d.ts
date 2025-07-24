@@ -7,6 +7,7 @@ import {
 	serveOptions,
 	edgeContext,
 	MiddlewareEntry,
+	Route,
 } from './src/types';
 import { Atomik as AtomikHandler } from './src/index';
 import { IncomingMessage, ServerResponse } from 'http';
@@ -15,7 +16,7 @@ declare class Atomik implements Router {
 	constructor();
 
 	// properties
-	routes: Map<string, RouteHandler>;
+	routes: Map<string, Route[]>;
 	middlewares: MiddlewareEntry[];
 	private addRoute(): (
 		method: string | string[],
