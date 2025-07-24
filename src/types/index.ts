@@ -66,6 +66,18 @@ export interface serveOptions {
 }
 
 export interface Router {
+	routes: Map<string, RouteHandler>;
+	middlewares: MiddlewareEntry[];
+	handle(
+		req: IncomingMessage,
+		res: ServerResponse,
+		ctx: Context,
+	): Promise<Response | undefined>;
+	handleMiddleware(
+		req: IncomingMessage,
+		res: ServerResponse,
+	): Promise<void | Response>;
+
 	use(middleware: MiddlewareFunction): void;
 	use(path: string, middleware: MiddlewareFunction): void;
 	use(arg1: string | MiddlewareFunction, arg2?: MiddlewareFunction): void;

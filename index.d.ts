@@ -6,11 +6,31 @@ import {
 	Router,
 	serveOptions,
 	edgeContext,
+	MiddlewareEntry,
 } from './src/types';
 import { Atomik as AtomikHandler } from './src/index';
+import { IncomingMessage, ServerResponse } from 'http';
 
 declare class Atomik implements Router {
 	constructor();
+
+	// properties
+	routes: Map<string, RouteHandler>;
+	middlewares: MiddlewareEntry[];
+	private addRoute(): (
+		method: string | string[],
+		path: string,
+		handler: RouteHandler,
+	) => void;
+	handle(
+		req: IncomingMessage,
+		res: ServerResponse,
+		ctx: Context,
+	): Promise<Response | undefined>;
+	handleMiddleware(
+		req: IncomingMessage,
+		res: ServerResponse,
+	): Promise<void | Response>;
 
 	// Middleware
 	use(middleware: MiddlewareFunction): void;
