@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { Atomik } from '..';
+import { Atomik } from '../../index';
 
 export interface Context {
 	req: IncomingMessage;
@@ -90,4 +90,9 @@ export interface Router {
 
 	// route sub-router
 	route(path: string, handler: Atomik): void;
+
+	handleMiddleware(
+		req: IncomingMessage,
+		res: ServerResponse,
+	): Promise<void | Response>;
 }
