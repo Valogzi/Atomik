@@ -13,12 +13,6 @@ import { Atomik as AtomikHandler } from './src/index';
 import { IncomingMessage, ServerResponse } from 'http';
 
 declare class Atomik implements Router {
-	// propriétés manquantes à ajouter
-	routes: Record<string, Route[]>;
-	middlewares: MiddlewareEntry[];
-
-	constructor();
-
 	// Middleware
 	use(middleware: MiddlewareFunction): void;
 	use(path: string, middleware: MiddlewareFunction): void;
@@ -36,19 +30,6 @@ declare class Atomik implements Router {
 
 	// route sub-router
 	route(path: string, handler: AtomikHandler): void;
-
-	private addRoute(method: string, path: string, handler: RouteHandler): void;
-
-	// méthode obligatoire pour l'interface Router
-	handle(
-		req: IncomingMessage,
-		res: ServerResponse,
-		ctx: Context,
-	): Promise<void | Response>;
-	handleMiddleware(
-		req: IncomingMessage,
-		res: ServerResponse,
-	): Promise<void | Response>;
 
 	// cross-runtime fetch
 	fetch(req: Request): Promise<Response>;

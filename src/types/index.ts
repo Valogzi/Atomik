@@ -73,10 +73,6 @@ export interface serveOptions {
 }
 
 export interface Router {
-	// propriétés publiques
-	routes: Record<string, Route[]>;
-	middlewares: MiddlewareEntry[];
-
 	// Middleware
 	use(middleware: MiddlewareFunction): void;
 	use(path: string, middleware: MiddlewareFunction): void;
@@ -92,17 +88,6 @@ export interface Router {
 	head(path: string, handler: RouteHandler): void;
 	all(path: string, handler: RouteHandler): void;
 
-	// Sous-router
+	// route sub-router
 	route(path: string, handler: Atomik): void;
-
-	// Gestion des requêtes
-	handle(
-		req: IncomingMessage,
-		res: ServerResponse,
-		ctx: Context,
-	): Promise<void | Response>;
-	handleMiddleware(
-		req: IncomingMessage,
-		res: ServerResponse,
-	): Promise<void | Response>;
 }
