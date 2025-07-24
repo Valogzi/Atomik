@@ -15,24 +15,6 @@ import { IncomingMessage, ServerResponse } from 'http';
 declare class Atomik implements Router {
 	constructor();
 
-	// properties
-	routes: Record<string, Route[]>;
-	middlewares: MiddlewareEntry[];
-	private addRoute(): (
-		method: string | string[],
-		path: string,
-		handler: RouteHandler,
-	) => void;
-	handle(
-		req: IncomingMessage,
-		res: ServerResponse,
-		ctx: Context,
-	): Promise<Response | undefined>;
-	handleMiddleware(
-		req: IncomingMessage,
-		res: ServerResponse,
-	): Promise<void | Response>;
-
 	// Middleware
 	use(middleware: MiddlewareFunction): void;
 	use(path: string, middleware: MiddlewareFunction): void;
