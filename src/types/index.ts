@@ -7,7 +7,7 @@ export interface Context {
 	url: string | null;
 	method: string;
 	params: Record<string, string>;
-	body: any;
+	body: Promise<any>;
 	query: URLSearchParams;
 	text(text: string): void;
 	json(data: any): void;
@@ -24,7 +24,7 @@ export interface edgeContext {
 	url: string;
 	method: string;
 	params: Record<string, string>;
-	body: any;
+	body: Promise<any>;
 	query: URLSearchParams;
 	text: (body: string) => Response;
 	json: (body: object) => Response;
