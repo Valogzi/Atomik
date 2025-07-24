@@ -73,17 +73,36 @@ export interface serveOptions {
 }
 
 export interface Router {
+	// propriétés publiques
+	routes: Record<string, Route[]>;
+	middlewares: MiddlewareEntry[];
+
+	// Middleware
 	use(middleware: MiddlewareFunction): void;
 	use(path: string, middleware: MiddlewareFunction): void;
 	use(arg1: string | MiddlewareFunction, arg2?: MiddlewareFunction): void;
 
+	// HTTP methods
 	get(path: string, handler: RouteHandler): void;
 	post(path: string, handler: RouteHandler): void;
 	put(path: string, handler: RouteHandler): void;
-	delete(path: string, handler: RouteHandler): void;
 	patch(path: string, handler: RouteHandler): void;
+	delete(path: string, handler: RouteHandler): void;
 	options(path: string, handler: RouteHandler): void;
 	head(path: string, handler: RouteHandler): void;
 	all(path: string, handler: RouteHandler): void;
+
+	// Sous-router
 	route(path: string, handler: Atomik): void;
+
+	// Gestion des requêtes
+	handle(
+		req: IncomingMessage,
+		res: ServerResponse,
+		ctx: Context,
+	): Promise<void | Response>;
+	handleMiddleware(
+		req: IncomingMessage,
+		res: ServerResponse,
+	): Promise<void | Response>;
 }
