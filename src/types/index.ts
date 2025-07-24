@@ -95,8 +95,6 @@ export interface Router {
 	// Sous-router
 	route(path: string, handler: Atomik): void;
 
-	addRoute(method: string, path: string, handler: RouteHandler): void;
-
 	// Gestion des requêtes
 	handle(
 		req: IncomingMessage,

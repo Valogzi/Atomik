@@ -37,7 +37,7 @@ declare class Atomik implements Router {
 	// route sub-router
 	route(path: string, handler: AtomikHandler): void;
 
-	addRoute(method: string, path: string, handler: RouteHandler): void;
+	private addRoute(method: string, path: string, handler: RouteHandler): void;
 
 	// méthode obligatoire pour l'interface Router
 	handle(
