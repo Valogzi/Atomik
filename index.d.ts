@@ -16,7 +16,7 @@ declare class Atomik implements Router {
 	constructor();
 
 	// properties
-	routes: Map<string, Route[]>;
+	routes: Record<string, Route[]>;
 	middlewares: MiddlewareEntry[];
 	private addRoute(): (
 		method: string | string[],

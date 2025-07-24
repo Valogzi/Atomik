@@ -73,7 +73,7 @@ export interface serveOptions {
 }
 
 export interface Router {
-	routes: Map<string, Route[]>;
+	routes: Record<string, Route[]>;
 	middlewares: MiddlewareEntry[];
 	handle(
 		req: IncomingMessage,
