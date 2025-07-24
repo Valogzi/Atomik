@@ -1,4 +1,5 @@
 import { edgeContext } from '../../types';
+import { parseBody } from '../api/request';
 
 export const EdgeContext = (
 	req: Request,
@@ -16,6 +17,7 @@ export const EdgeContext = (
 		url: url.pathname,
 		method: req.method || 'GET',
 		params,
+		body: parseBody(req),
 		query: url.searchParams,
 		text(body: string): Response {
 			headers.set('Content-Type', 'text/plain; charset=utf-8');

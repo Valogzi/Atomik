@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nodejsContext = void 0;
+const request_1 = require("../api/request");
 const nodejsContext = (req, res, params = {}) => {
     const url = req.url
         ? new URL(req.url, `http://${req.headers.host}`).pathname
@@ -11,6 +12,7 @@ const nodejsContext = (req, res, params = {}) => {
         url,
         method: req.method || 'GET',
         params, // Maintenant c'est un objet avec les paramètres de route
+        body: (0, request_1.nodeRequest)(req),
         query: new URLSearchParams(req.url?.split('?')[1] || ''),
         text: (body) => {
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');

@@ -1,7 +1,7 @@
 import { Atomik, serve, cors } from '../index';
 const api = new Atomik();
 
-api.use(cors());
+// api.use(cors());
 api.use('*', (c, next) => {
 	console.log(`[API ROUTER] ${c.method} ${c.url}`);
 	next();
@@ -49,6 +49,14 @@ api.get('/search/:category', c => {
 		searchQuery: query,
 		limit: parseInt(limit),
 		results: [],
+	});
+});
+
+api.post('/submit', async c => {
+	const body = await c.body;
+	return c.json({
+		message: 'Données soumises avec succès',
+		data: body,
 	});
 });
 

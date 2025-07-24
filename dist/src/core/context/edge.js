@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EdgeContext = void 0;
+const request_1 = require("../api/request");
 const EdgeContext = (req, res, params = {}) => {
     const url = new URL(req.url);
     let headers = new Headers();
@@ -11,6 +12,7 @@ const EdgeContext = (req, res, params = {}) => {
         url: url.pathname,
         method: req.method || 'GET',
         params,
+        body: (0, request_1.parseBody)(req),
         query: url.searchParams,
         text(body) {
             headers.set('Content-Type', 'text/plain; charset=utf-8');

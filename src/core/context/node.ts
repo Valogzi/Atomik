@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { Context } from '../../types';
+import { nodeRequest } from '../api/request';
 
 export const nodejsContext = (
 	req: IncomingMessage,
@@ -16,6 +17,7 @@ export const nodejsContext = (
 		url,
 		method: req.method || 'GET',
 		params, // Maintenant c'est un objet avec les paramètres de route
+		body: nodeRequest(req),
 		query: new URLSearchParams(req.url?.split('?')[1] || ''),
 		text: (body: string) => {
 			res.setHeader('Content-Type', 'text/plain; charset=utf-8');
