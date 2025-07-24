@@ -3,11 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../index");
 const api = new index_1.Atomik();
 // api.use(cors());
-api.use('*', (c, next) => {
-    console.log(`[API ROUTER] ${c.method} ${c.url}`);
-    next();
-});
-api.get('/', async (c) => {
+api.get('/', c => {
     return c.status(200).text('Hello, World! dqddq');
 });
 api.get('/qdqq', c => {
@@ -53,7 +49,7 @@ api.post('/submit', async (c) => {
     });
 });
 const statusApi = new index_1.Atomik();
-statusApi.get('/', c => {
+statusApi.get('/status-test', c => {
     new Promise(resolve => setTimeout(resolve, 1000));
     return c.json({
         status: 'OK',
@@ -67,7 +63,11 @@ statusApi.get('/health', c => {
     });
 });
 const app = new index_1.Atomik();
-app.route('/api', api);
-app.route('/status', statusApi);
+app.use('*', (c, next) => {
+    console.log(`[API ROUTER] ${c.method} ${c.url}`);
+    next();
+});
+app.route('/', api);
+app.route('/', statusApi);
 (0, index_1.serve)({ app: app });
 exports.default = app;

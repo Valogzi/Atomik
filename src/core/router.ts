@@ -11,6 +11,7 @@ import {
 export class Router {
 	routes: Record<string, Route[]> = {};
 	middlewares: MiddlewareEntry[] = [];
+	base: string = '';
 
 	private addRoute(
 		method: string | string[],
@@ -52,7 +53,7 @@ export class Router {
 	use(path: string, middleware: MiddlewareFunction): void;
 	use(arg1: string | MiddlewareFunction, arg2?: MiddlewareFunction): void {
 		if (typeof arg1 === 'string' && typeof arg2 === 'function') {
-			this.middlewares.push({ path: arg1, handler: arg2 });
+			this.middlewares.push({ path: this.base + arg1, handler: arg2 });
 		} else if (typeof arg1 === 'function') {
 			this.middlewares.push({ path: null, handler: arg1 });
 		} else {
@@ -60,34 +61,49 @@ export class Router {
 		}
 	}
 
+	basePath(path: string) {
+		this.base = path.endsWith('/') ? path.slice(0, -1) : path;
+		return this;
+	}
+
 	get(path: string, handler: RouteHandler) {
-		this.addRoute('GET', path, handler);
+		this.addRoute('GET', this.base + path, handler);
 	}
 	post(path: string, handler: RouteHandler) {
-		this.addRoute('POST', path, handler);
+		this.addRoute('POST', this.base + path, handler);
 	}
 	put(path: string, handler: RouteHandler) {
-		this.addRoute('PUT', path, handler);
+		this.addRoute('PUT', this.base + path, handler);
 	}
 	patch(path: string, handler: RouteHandler) {
-		this.addRoute('PATCH', path, handler);
+		this.addRoute('PATCH', this.base + path, handler);
 	}
 	delete(path: string, handler: RouteHandler) {
-		this.addRoute('DELETE', path, handler);
+		this.addRoute('DELETE', this.base + path, handler);
 	}
 	options(path: string, handler: RouteHandler) {
-		this.addRoute('OPTIONS', path, handler);
+		this.addRoute('OPTIONS', this.base + path, handler);
 	}
 	head(path: string, handler: RouteHandler) {
-		this.addRoute('HEAD', path, handler);
+		this.addRoute('HEAD', this.base + path, handler);
 	}
 	all(path: string, handler: RouteHandler) {
-		this.addRoute(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], path, handler);
+		this.addRoute(
+			['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+			this.base + path,
+			handler,
+		);
 	}
 	route(path: string, handle: Atomik) {
 		const routes = handle.routes;
-		const checkPathSlash = path === '/' ? '' : path;
+		const routePath = path === '/' ? '' : path; // Traiter le cas de la racine
 
+		const checkPathSlash =
+			path === '/' && this.base === ''
+				? ''
+				: this.base + routePath === '/'
+				? ''
+				: this.base + routePath;
 		handle.middlewares.forEach(mw => {
 			if (mw.path !== null) {
 				mw.path = checkPathSlash + mw.path; // Préfixer le chemin du middleware
@@ -105,7 +121,11 @@ export class Router {
 					route.pattern = route.pattern.slice(0, -1); // Enlever le slash final
 				}
 				const fullRoute = checkPathSlash + route.pattern;
-				this.addRoute(method, fullRoute, route.handler);
+				this.addRoute(
+					method,
+					fullRoute === '' ? '/' : fullRoute,
+					route.handler,
+				);
 			});
 			delete routes[method]; // Nettoyer les routes après les avoir ajoutées
 		});
@@ -121,6 +141,16 @@ export class Router {
 
 		for (const route of methodRoutes) {
 			const match = url.match(route.regex);
+			const filterExistedPath =
+				methodRoutes.filter(r => {
+					return r.pattern === route.pattern;
+				}).length > 1;
+
+			if (filterExistedPath) {
+				throw new Error(
+					`Route conflict detected for path: ${route.pattern} with method: ${method}`,
+				);
+			}
 			if (match) {
 				// Extraire les paramètres
 				const params: Record<string, string> = {};

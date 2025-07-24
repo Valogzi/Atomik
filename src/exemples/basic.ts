@@ -1,13 +1,10 @@
 import { Atomik, serve, cors } from '../index';
+
 const api = new Atomik();
 
 // api.use(cors());
-api.use('*', (c, next) => {
-	console.log(`[API ROUTER] ${c.method} ${c.url}`);
-	next();
-});
 
-api.get('/', async c => {
+api.get('/', c => {
 	return c.status(200).text('Hello, World! dqddq');
 });
 
@@ -62,7 +59,7 @@ api.post('/submit', async c => {
 
 const statusApi = new Atomik();
 
-statusApi.get('/', c => {
+statusApi.get('/status-test', c => {
 	new Promise(resolve => setTimeout(resolve, 1000));
 	return c.json({
 		status: 'OK',
@@ -79,8 +76,13 @@ statusApi.get('/health', c => {
 
 const app = new Atomik();
 
-app.route('/api', api);
-app.route('/status', statusApi);
+app.use('*', (c, next) => {
+	console.log(`[API ROUTER] ${c.method} ${c.url}`);
+	next();
+});
+
+app.route('/', api);
+app.route('/', statusApi);
 
 serve({ app: app });
 

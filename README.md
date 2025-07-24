@@ -165,6 +165,63 @@ app.route('/status', status); // same things here ==> (status router) /current -
 export default app; // Accessible routes are only those of the exported router. You will not be able to access other routes if they are not connected to the router exported by app.route()
 ```
 
+### Set a base path
+
+```typescript
+import { Atomik } from 'atomikjs';
+
+const app = new Atomik().basePath('/api');
+
+app.get('/test', c => {
+	return c.json({
+		message: 'endpoint /test with custom basePath',
+	});
+});
+
+export default app;
+```
+
+### Base path with route group routing
+
+```typescript
+import { Atomik } from 'atomikjs';
+
+const api = new Atomik().basePath('/api');
+
+api.get('/test', c => {
+	// /api/test
+	return c.json({
+		message: 'endpoint /test with custom basePath',
+	});
+});
+
+const status = new Atomik();
+
+status.get('/test', c => {
+	// /test
+	return c.json({
+		message: 'test',
+	});
+});
+
+const test = new Atomik();
+
+test.get('/test', c => {
+	// /v1/test
+	return c.json({
+		message: 'from /test',
+	});
+});
+
+const app = new Atomik();
+
+app.route('/', status);
+app.route('/', api);
+app.route('/v1', test);
+
+export default app;
+```
+
 ### Context API
 
 The context (`c`) provides useful methods for handling requests and responses:
