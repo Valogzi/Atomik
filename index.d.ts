@@ -9,7 +9,6 @@ import {
 	MiddlewareEntry,
 	Route,
 } from './src/types';
-import { Atomik as AtomikHandler } from './src/index';
 import { IncomingMessage, ServerResponse } from 'http';
 
 declare class Atomik implements Router {
@@ -29,7 +28,7 @@ declare class Atomik implements Router {
 	all(path: string, handler: RouteHandler): void;
 
 	// route sub-router
-	route(path: string, handler: AtomikHandler): void;
+	route(path: string, handler: Atomik): void;
 
 	// cross-runtime fetch
 	fetch(
